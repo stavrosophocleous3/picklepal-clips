@@ -100,7 +100,16 @@ const Trending = () => {
         profilesData?.map(p => [p.id, p]) || []
       );
 
-      // Combine videos with profiles
+      // Count trending videos per user (for badges)
+      const userTrendingCount = new Map<string, number>();
+      scoredVideos.forEach((video, index) => {
+        if (index < 10) { // Only count top 10 as "trending"
+          const count = userTrendingCount.get(video.user_id) || 0;
+          userTrendingCount.set(video.user_id, count + 1);
+        }
+      });
+
+      // Combine videos with profiles and trending counts
       const formattedVideos: Video[] = scoredVideos.map((video) => {
         const profile = profilesMap.get(video.user_id);
         return {
@@ -112,6 +121,7 @@ const Trending = () => {
           comments: video.comments_count || 0,
           hashtags: video.hashtags || [],
           userAvatar: profile?.avatar_url,
+          userTrendingCount: userTrendingCount.get(video.user_id) || 0,
         };
       });
 
