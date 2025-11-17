@@ -1,7 +1,9 @@
 import { useState } from "react";
-import { Circle, CircleSlash, MessageCircle, Share2, User } from "lucide-react";
+import { MessageCircle, Share2, User } from "lucide-react";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
+import pickleballIcon from "@/assets/pickleball.png";
+import pickleballBrokenIcon from "@/assets/pickleball-broken.png";
 
 interface VideoCardProps {
   videoUrl: string;
@@ -107,12 +109,13 @@ export const VideoCard = ({
               onClick={handleUpvote}
               className="flex flex-col h-auto gap-1"
             >
-              <Circle
+              <img
+                src={pickleballIcon}
+                alt="Pickleball"
                 className={cn(
-                  "w-7 h-7 transition-all",
-                  vote === 'up' ? "fill-primary text-primary" : "text-white"
+                  "w-10 h-10 transition-all",
+                  vote === 'up' ? "scale-110 drop-shadow-[0_0_8px_hsl(var(--primary))]" : "opacity-80"
                 )}
-                strokeWidth={vote === 'up' ? 3 : 2}
               />
             </Button>
             
@@ -126,12 +129,13 @@ export const VideoCard = ({
               onClick={handleDownvote}
               className="flex flex-col h-auto gap-1"
             >
-              <CircleSlash
+              <img
+                src={pickleballBrokenIcon}
+                alt="Broken Pickleball"
                 className={cn(
-                  "w-7 h-7 transition-all",
-                  vote === 'down' ? "fill-destructive text-destructive" : "text-white"
+                  "w-10 h-10 transition-all",
+                  vote === 'down' ? "scale-110 drop-shadow-[0_0_8px_hsl(var(--destructive))]" : "opacity-80"
                 )}
-                strokeWidth={vote === 'down' ? 3 : 2}
               />
             </Button>
 
