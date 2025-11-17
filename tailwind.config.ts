@@ -57,6 +57,11 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        pickleball: {
+          green: "hsl(var(--pickleball-green))",
+          "green-dark": "hsl(var(--pickleball-green-dark))",
+          "green-light": "hsl(var(--pickleball-green-light))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
