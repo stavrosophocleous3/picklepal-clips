@@ -1,16 +1,29 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { MobileNav } from "@/components/MobileNav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Upload as UploadIcon, Video } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const Upload = () => {
   const [caption, setCaption] = useState("");
   const [hashtags, setHashtags] = useState("");
   const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check if user is logged in
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        navigate("/auth");
+      }
+    });
+  }, [navigate]);
 
   const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -34,7 +47,7 @@ const Upload = () => {
     }
   };
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (!videoFile) {
       toast({
         title: "No video selected",
@@ -53,11 +66,65 @@ const Upload = () => {
       return;
     }
 
-    // TODO: Implement actual upload to backend
-    toast({
-      title: "Upload started!",
-      description: "Your clip is being uploaded to PickleTok",
-    });
+    setUploading(true);
+
+    try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      // Upload video to storage
+      const fileExt = videoFile.name.split(".").pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from("videos")
+        .upload(fileName, videoFile);
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from("videos")
+        .getPublicUrl(fileName);
+
+      // Parse hashtags
+      const hashtagArray = hashtags
+        .split(" ")
+        .filter((tag) => tag.trim().startsWith("#"))
+        .map((tag) => tag.trim());
+
+      // Insert video record
+      const { error: insertError } = await supabase.from("videos").insert({
+        user_id: user.id,
+        video_url: publicUrl,
+        caption,
+        hashtags: hashtagArray,
+      });
+
+      if (insertError) throw insertError;
+
+      toast({
+        title: "Video uploaded!",
+        description: "Your clip is now live on PickleTok",
+      });
+
+      // Reset form
+      setCaption("");
+      setHashtags("");
+      setVideoFile(null);
+      
+      // Navigate to home
+      navigate("/");
+    } catch (error: any) {
+      toast({
+        title: "Upload failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
@@ -127,8 +194,9 @@ const Upload = () => {
           onClick={handleUpload}
           className="w-full h-12 text-lg font-semibold"
           size="lg"
+          disabled={uploading}
         >
-          Upload to PickleTok
+          {uploading ? "Uploading..." : "Upload to PickleTok"}
         </Button>
       </div>
 
