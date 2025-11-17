@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { MessageCircle, Share2, User } from "lucide-react";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
 import pickleballIcon from "@/assets/pickleball.png";
 import pickleballBrokenIcon from "@/assets/pickleball-broken.png";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface VideoCardProps {
   videoUrl: string;
@@ -13,6 +15,8 @@ interface VideoCardProps {
   comments: number;
   hashtags: string[];
   userAvatar?: string;
+  videoId: string;
+  onVoteChange?: () => void;
 }
 
 export const VideoCard = ({
@@ -23,41 +27,168 @@ export const VideoCard = ({
   comments,
   hashtags,
   userAvatar,
+  videoId,
+  onVoteChange,
 }: VideoCardProps) => {
   const [vote, setVote] = useState<'up' | 'down' | null>(null);
   const [voteCount, setVoteCount] = useState(likes);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showLikeAnimation, setShowLikeAnimation] = useState(false);
+  const [lastTap, setLastTap] = useState(0);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const { toast } = useToast();
 
-  const handleUpvote = () => {
-    if (vote === 'up') {
-      setVote(null);
-      setVoteCount(voteCount - 1);
-    } else if (vote === 'down') {
+  useEffect(() => {
+    checkUserVote();
+  }, [videoId]);
+
+  const checkUserVote = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data } = await supabase
+      .from("likes")
+      .select("*")
+      .eq("video_id", videoId)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (data) {
       setVote('up');
-      setVoteCount(voteCount + 2);
-    } else {
-      setVote('up');
-      setVoteCount(voteCount + 1);
     }
   };
 
-  const handleDownvote = () => {
-    if (vote === 'down') {
-      setVote(null);
-      setVoteCount(voteCount + 1);
-    } else if (vote === 'up') {
-      setVote('down');
-      setVoteCount(voteCount - 2);
-    } else {
-      setVote('down');
-      setVoteCount(voteCount - 1);
+  const handleVideoClick = () => {
+    if (videoRef.current) {
+      if (videoRef.current.paused) {
+        videoRef.current.play();
+      } else {
+        videoRef.current.pause();
+      }
+    }
+  };
+
+  const handleDoubleTap = async () => {
+    const now = Date.now();
+    const timeSince = now - lastTap;
+    
+    if (timeSince < 300 && timeSince > 0) {
+      // Double tap detected
+      setShowLikeAnimation(true);
+      setTimeout(() => setShowLikeAnimation(false), 1000);
+      
+      if (vote !== 'up') {
+        await handleUpvote();
+      }
+    }
+    
+    setLastTap(now);
+  };
+
+  const handleUpvote = async () => {
+    if (isLoading) return;
+    
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to vote on videos",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      if (vote === 'up') {
+        // Remove vote
+        await supabase
+          .from("likes")
+          .delete()
+          .eq("video_id", videoId)
+          .eq("user_id", user.id);
+        
+        setVote(null);
+        setVoteCount(voteCount - 1);
+      } else {
+        // Add upvote (remove downvote if exists, though we don't store downvotes)
+        await supabase
+          .from("likes")
+          .insert({
+            video_id: videoId,
+            user_id: user.id,
+          });
+        
+        const adjustment = vote === 'down' ? 2 : 1;
+        setVote('up');
+        setVoteCount(voteCount + adjustment);
+      }
+      
+      onVoteChange?.();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDownvote = async () => {
+    if (isLoading) return;
+    
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to vote on videos",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      if (vote === 'down') {
+        setVote(null);
+        setVoteCount(voteCount + 1);
+      } else if (vote === 'up') {
+        // Remove the like from database
+        await supabase
+          .from("likes")
+          .delete()
+          .eq("video_id", videoId)
+          .eq("user_id", user.id);
+        
+        setVote('down');
+        setVoteCount(voteCount - 2);
+      } else {
+        setVote('down');
+        setVoteCount(voteCount - 1);
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="relative w-full h-screen snap-item">
       {/* Video Background */}
-      <div className="absolute inset-0 bg-muted">
+      <div 
+        className="absolute inset-0 bg-muted"
+        onClick={handleVideoClick}
+        onDoubleClick={handleDoubleTap}
+      >
         <video
+          ref={videoRef}
           src={videoUrl}
           className="w-full h-full object-cover"
           loop
@@ -67,14 +198,25 @@ export const VideoCard = ({
         />
       </div>
 
+      {/* Double-tap Like Animation */}
+      {showLikeAnimation && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <img
+            src={pickleballIcon}
+            alt="Like"
+            className="w-32 h-32 animate-scale-in drop-shadow-[0_0_20px_hsl(var(--primary))]"
+          />
+        </div>
+      )}
+
       {/* Overlay Gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60" />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60 pointer-events-none" />
 
       {/* Content Overlay */}
-      <div className="absolute inset-0 flex flex-col justify-end p-4 pb-20">
+      <div className="absolute inset-0 flex flex-col justify-end p-4 pb-20 pointer-events-none">
         <div className="flex gap-4">
           {/* Left Side - Info */}
-          <div className="flex-1">
+          <div className="flex-1 pointer-events-auto">
             {/* User Info */}
             <div className="flex items-center gap-2 mb-3">
               <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center overflow-hidden border-2 border-background">
@@ -101,12 +243,13 @@ export const VideoCard = ({
           </div>
 
           {/* Right Side - Actions */}
-          <div className="flex flex-col items-center gap-4">
+          <div className="flex flex-col items-center gap-4 pointer-events-auto">
             {/* Upvote - Pickleball */}
             <Button
               variant="ghost"
               size="icon"
               onClick={handleUpvote}
+              disabled={isLoading}
               className="flex flex-col h-auto gap-1"
             >
               <img
@@ -127,6 +270,7 @@ export const VideoCard = ({
               variant="ghost"
               size="icon"
               onClick={handleDownvote}
+              disabled={isLoading}
               className="flex flex-col h-auto gap-1"
             >
               <img
