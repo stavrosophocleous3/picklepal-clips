@@ -123,10 +123,46 @@ export type Database = {
         }
         Relationships: []
       }
+      video_views: {
+        Row: {
+          completed: boolean
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+          video_id: string
+        }
+        Insert: {
+          completed?: boolean
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+          video_id: string
+        }
+        Update: {
+          completed?: boolean
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+          video_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_views_video_id_fkey"
+            columns: ["video_id"]
+            isOneToOne: false
+            referencedRelation: "videos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       videos: {
         Row: {
           caption: string
           comments_count: number | null
+          completions_count: number | null
           created_at: string | null
           hashtags: string[] | null
           id: string
@@ -138,6 +174,7 @@ export type Database = {
         Insert: {
           caption: string
           comments_count?: number | null
+          completions_count?: number | null
           created_at?: string | null
           hashtags?: string[] | null
           id?: string
@@ -149,6 +186,7 @@ export type Database = {
         Update: {
           caption?: string
           comments_count?: number | null
+          completions_count?: number | null
           created_at?: string | null
           hashtags?: string[] | null
           id?: string

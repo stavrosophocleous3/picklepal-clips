@@ -56,10 +56,11 @@ const Trending = () => {
         // Weights (TikTok-style)
         const likes = video.likes_count || 0;
         const comments = (video.comments_count || 0) * 3; // Comments worth 3x likes
+        const completions = (video.completions_count || 0) * 2; // Full video watches worth 2x likes
         const shares = 0; // We don't have shares yet, but worth 5x likes
         
         // Total engagement
-        const totalEngagement = likes + comments + shares;
+        const totalEngagement = likes + comments + completions + shares;
         
         // Engagement velocity (engagement per hour)
         const engagementVelocity = ageInHours > 0 ? totalEngagement / ageInHours : totalEngagement;

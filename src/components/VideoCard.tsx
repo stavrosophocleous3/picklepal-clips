@@ -35,11 +35,13 @@ export const VideoCard = ({
   const [isLoading, setIsLoading] = useState(false);
   const [showLikeAnimation, setShowLikeAnimation] = useState(false);
   const [lastTap, setLastTap] = useState(0);
+  const [hasTrackedCompletion, setHasTrackedCompletion] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     checkUserVote();
+    checkOrCreateView();
   }, [videoId]);
 
   const checkUserVote = async () => {
@@ -55,6 +57,54 @@ export const VideoCard = ({
 
     if (data) {
       setVote('up');
+    }
+  };
+
+  const checkOrCreateView = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    // Check if view already exists
+    const { data: existingView } = await supabase
+      .from("video_views")
+      .select("*")
+      .eq("video_id", videoId)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (existingView) {
+      setHasTrackedCompletion(existingView.completed);
+    } else {
+      // Create new view record
+      await supabase
+        .from("video_views")
+        .insert({
+          video_id: videoId,
+          user_id: user.id,
+          completed: false,
+        });
+    }
+  };
+
+  const handleVideoProgress = async () => {
+    if (!videoRef.current || hasTrackedCompletion) return;
+
+    const { currentTime, duration } = videoRef.current;
+    const progress = currentTime / duration;
+
+    // If video is 95% complete, mark as completed
+    if (progress >= 0.95) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      await supabase
+        .from("video_views")
+        .update({ completed: true, updated_at: new Date().toISOString() })
+        .eq("video_id", videoId)
+        .eq("user_id", user.id);
+
+      setHasTrackedCompletion(true);
+      onVoteChange?.(); // Refresh trending data
     }
   };
 
@@ -195,6 +245,7 @@ export const VideoCard = ({
           autoPlay
           playsInline
           muted
+          onTimeUpdate={handleVideoProgress}
         />
       </div>
 
