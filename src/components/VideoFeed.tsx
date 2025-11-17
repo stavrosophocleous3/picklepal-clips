@@ -14,13 +14,20 @@ interface Video {
 interface VideoFeedProps {
   videos: Video[];
   onVoteChange?: () => void;
+  showTrendingRanks?: boolean;
 }
 
-export const VideoFeed = ({ videos, onVoteChange }: VideoFeedProps) => {
+export const VideoFeed = ({ videos, onVoteChange, showTrendingRanks }: VideoFeedProps) => {
   return (
     <div className="h-screen overflow-y-scroll snap-scroll hide-scrollbar">
-      {videos.map((video) => (
-        <VideoCard key={video.id} {...video} videoId={video.id} onVoteChange={onVoteChange} />
+      {videos.map((video, index) => (
+        <VideoCard 
+          key={video.id} 
+          {...video} 
+          videoId={video.id} 
+          onVoteChange={onVoteChange}
+          trendingRank={showTrendingRanks ? index + 1 : undefined}
+        />
       ))}
     </div>
   );

@@ -143,29 +143,58 @@ const Trending = () => {
 
   if (videos.length === 0) {
     return (
-      <div className="h-screen flex flex-col items-center justify-center bg-background p-4">
-        <TrendingUp className="w-16 h-16 text-muted-foreground mb-4" />
-        <h2 className="text-2xl font-bold mb-2">No trending videos</h2>
-        <p className="text-muted-foreground text-center mb-6">
-          Be the first to create viral content!
+      <div className="h-screen flex flex-col items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
+        <div className="relative mb-6">
+          <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full animate-pulse" />
+          <TrendingUp className="w-20 h-20 text-primary relative animate-bounce" />
+        </div>
+        <h2 className="text-3xl font-bold mb-3 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+          No Trending Videos Yet
+        </h2>
+        <p className="text-muted-foreground text-center mb-8 max-w-sm">
+          Be the first to create viral content and watch your video soar to the top!
         </p>
-        <Button onClick={() => navigate("/upload")}>Upload Video</Button>
+        <Button 
+          onClick={() => navigate("/upload")} 
+          size="lg"
+          className="group relative overflow-hidden"
+        >
+          <span className="relative z-10 flex items-center gap-2">
+            <VideoIcon className="w-4 h-4" />
+            Upload Video
+          </span>
+          <div className="absolute inset-0 bg-gradient-to-r from-primary to-primary/60 opacity-0 group-hover:opacity-100 transition-opacity" />
+        </Button>
         <MobileNav />
       </div>
     );
   }
 
   return (
-    <div className="h-screen overflow-hidden bg-background">
-      {/* Header */}
-      <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-black/60 to-transparent p-4">
-        <div className="flex items-center gap-2 text-white">
-          <TrendingUp className="w-6 h-6" />
-          <h1 className="text-xl font-bold">Trending</h1>
+    <div className="h-screen overflow-hidden bg-background relative">
+      {/* Enhanced Header with Gradient */}
+      <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-black via-black/80 to-transparent pb-8">
+        <div className="p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <TrendingUp className="w-7 h-7 text-primary animate-pulse" />
+                <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-white tracking-tight">Trending</h1>
+                <p className="text-xs text-white/60">Top videos right now</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/20 backdrop-blur-sm border border-primary/30">
+              <VideoIcon className="w-3.5 h-3.5 text-primary" />
+              <span className="text-xs font-semibold text-white">{videos.length}</span>
+            </div>
+          </div>
         </div>
       </div>
       
-      <VideoFeed videos={videos} onVoteChange={loadTrendingVideos} />
+      <VideoFeed videos={videos} onVoteChange={loadTrendingVideos} showTrendingRanks />
       <MobileNav />
     </div>
   );
