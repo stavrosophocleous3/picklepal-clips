@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Heart, MessageCircle, Share2, User } from "lucide-react";
+import { Circle, CircleSlash, MessageCircle, Share2, User } from "lucide-react";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
 
@@ -22,12 +22,33 @@ export const VideoCard = ({
   hashtags,
   userAvatar,
 }: VideoCardProps) => {
-  const [isLiked, setIsLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(likes);
+  const [vote, setVote] = useState<'up' | 'down' | null>(null);
+  const [voteCount, setVoteCount] = useState(likes);
 
-  const handleLike = () => {
-    setIsLiked(!isLiked);
-    setLikeCount(isLiked ? likeCount - 1 : likeCount + 1);
+  const handleUpvote = () => {
+    if (vote === 'up') {
+      setVote(null);
+      setVoteCount(voteCount - 1);
+    } else if (vote === 'down') {
+      setVote('up');
+      setVoteCount(voteCount + 2);
+    } else {
+      setVote('up');
+      setVoteCount(voteCount + 1);
+    }
+  };
+
+  const handleDownvote = () => {
+    if (vote === 'down') {
+      setVote(null);
+      setVoteCount(voteCount + 1);
+    } else if (vote === 'up') {
+      setVote('down');
+      setVoteCount(voteCount - 2);
+    } else {
+      setVote('down');
+      setVoteCount(voteCount - 1);
+    }
   };
 
   return (
@@ -78,20 +99,40 @@ export const VideoCard = ({
           </div>
 
           {/* Right Side - Actions */}
-          <div className="flex flex-col items-center gap-6">
+          <div className="flex flex-col items-center gap-4">
+            {/* Upvote - Pickleball */}
             <Button
               variant="ghost"
               size="icon"
-              onClick={handleLike}
+              onClick={handleUpvote}
               className="flex flex-col h-auto gap-1"
             >
-              <Heart
+              <Circle
                 className={cn(
-                  "w-7 h-7 transition-colors",
-                  isLiked ? "fill-primary text-primary" : "text-white"
+                  "w-7 h-7 transition-all",
+                  vote === 'up' ? "fill-primary text-primary" : "text-white"
                 )}
+                strokeWidth={vote === 'up' ? 3 : 2}
               />
-              <span className="text-xs text-white">{likeCount}</span>
+            </Button>
+            
+            {/* Vote Count */}
+            <span className="text-sm font-bold text-white">{voteCount}</span>
+
+            {/* Downvote - Broken Pickleball */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleDownvote}
+              className="flex flex-col h-auto gap-1"
+            >
+              <CircleSlash
+                className={cn(
+                  "w-7 h-7 transition-all",
+                  vote === 'down' ? "fill-destructive text-destructive" : "text-white"
+                )}
+                strokeWidth={vote === 'down' ? 3 : 2}
+              />
             </Button>
 
             <Button variant="ghost" size="icon" className="flex flex-col h-auto gap-1">
