@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { MessageCircle, Share2, User } from "lucide-react";
+import { MessageCircle, Share2, User, TrendingUp } from "lucide-react";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
 import pickleballIcon from "@/assets/pickleball.png";
@@ -17,6 +17,7 @@ interface VideoCardProps {
   userAvatar?: string;
   videoId: string;
   onVoteChange?: () => void;
+  trendingRank?: number;
 }
 
 export const VideoCard = ({
@@ -29,6 +30,7 @@ export const VideoCard = ({
   userAvatar,
   videoId,
   onVoteChange,
+  trendingRank,
 }: VideoCardProps) => {
   const [vote, setVote] = useState<'up' | 'down' | null>(null);
   const [voteCount, setVoteCount] = useState(likes);
@@ -257,6 +259,24 @@ export const VideoCard = ({
             alt="Like"
             className="w-32 h-32 animate-scale-in drop-shadow-[0_0_20px_hsl(var(--primary))]"
           />
+        </div>
+      )}
+
+      {/* Trending Rank Badge */}
+      {trendingRank && trendingRank <= 10 && (
+        <div className="absolute top-20 right-4 z-20 pointer-events-none">
+          <div className={cn(
+            "relative px-4 py-2 rounded-full backdrop-blur-md border-2 shadow-lg animate-fade-in",
+            trendingRank === 1 && "bg-gradient-to-r from-yellow-500/90 to-amber-500/90 border-yellow-400",
+            trendingRank === 2 && "bg-gradient-to-r from-gray-400/90 to-gray-500/90 border-gray-300",
+            trendingRank === 3 && "bg-gradient-to-r from-orange-600/90 to-orange-700/90 border-orange-500",
+            trendingRank > 3 && "bg-primary/90 border-primary"
+          )}>
+            <div className="flex items-center gap-1.5">
+              <TrendingUp className="w-4 h-4 text-white" />
+              <span className="text-sm font-bold text-white">#{trendingRank}</span>
+            </div>
+          </div>
         </div>
       )}
 
