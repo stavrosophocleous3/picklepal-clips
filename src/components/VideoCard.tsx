@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { MessageCircle, Share2, User, TrendingUp } from "lucide-react";
+import { MessageCircle, Share2, User, TrendingUp, Crown, Award, Flame } from "lucide-react";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
 import pickleballIcon from "@/assets/pickleball.png";
@@ -18,6 +18,7 @@ interface VideoCardProps {
   videoId: string;
   onVoteChange?: () => void;
   trendingRank?: number;
+  userTrendingCount?: number;
 }
 
 export const VideoCard = ({
@@ -31,6 +32,7 @@ export const VideoCard = ({
   videoId,
   onVoteChange,
   trendingRank,
+  userTrendingCount = 0,
 }: VideoCardProps) => {
   const [vote, setVote] = useState<'up' | 'down' | null>(null);
   const [voteCount, setVoteCount] = useState(likes);
@@ -290,14 +292,45 @@ export const VideoCard = ({
           <div className="flex-1 pointer-events-auto">
             {/* User Info */}
             <div className="flex items-center gap-2 mb-3">
-              <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center overflow-hidden border-2 border-background">
+              <div className="relative w-10 h-10 rounded-full bg-muted flex items-center justify-center overflow-hidden border-2 border-background">
                 {userAvatar ? (
                   <img src={userAvatar} alt={username} className="w-full h-full object-cover" />
                 ) : (
                   <User className="w-5 h-5 text-muted-foreground" />
                 )}
+                
+                {/* Achievement Badge */}
+                {userTrendingCount >= 5 && (
+                  <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center border-2 border-background shadow-lg animate-pulse">
+                    <Crown className="w-3.5 h-3.5 text-white" />
+                  </div>
+                )}
+                {userTrendingCount === 4 && (
+                  <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center border-2 border-background shadow-lg">
+                    <Award className="w-3.5 h-3.5 text-white" />
+                  </div>
+                )}
+                {userTrendingCount === 3 && (
+                  <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center border-2 border-background shadow-lg">
+                    <Flame className="w-3.5 h-3.5 text-white" />
+                  </div>
+                )}
+                {userTrendingCount === 2 && (
+                  <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center border-2 border-background shadow-lg">
+                    <TrendingUp className="w-3 h-3 text-white" />
+                  </div>
+                )}
               </div>
-              <span className="font-semibold text-white">@{username}</span>
+              <div>
+                <span className="font-semibold text-white">@{username}</span>
+                {userTrendingCount >= 3 && (
+                  <div className="flex items-center gap-1 mt-0.5">
+                    <span className="text-xs text-yellow-400 font-bold">
+                      {userTrendingCount >= 5 ? "Pickle God 👑" : userTrendingCount === 4 ? "Rising Star ⭐" : "On Fire 🔥"}
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Caption */}

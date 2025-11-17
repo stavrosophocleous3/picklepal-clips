@@ -9,6 +9,7 @@ interface Video {
   comments: number;
   hashtags: string[];
   userAvatar?: string;
+  userTrendingCount?: number;
 }
 
 interface VideoFeedProps {
@@ -27,6 +28,7 @@ export const VideoFeed = ({ videos, onVoteChange, showTrendingRanks }: VideoFeed
           videoId={video.id} 
           onVoteChange={onVoteChange}
           trendingRank={showTrendingRanks ? index + 1 : undefined}
+          userTrendingCount={video.userTrendingCount}
         />
       ))}
     </div>
