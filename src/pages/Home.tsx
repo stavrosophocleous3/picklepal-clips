@@ -1,41 +1,88 @@
 import { VideoFeed } from "@/components/VideoFeed";
 import { MobileNav } from "@/components/MobileNav";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
+import { Loader2 } from "lucide-react";
 
-// Mock data - will be replaced with real data from backend
-const mockVideos = [
-  {
-    id: "1",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-    caption: "Perfect backhand volley! 🎾",
-    username: "picklemaster",
-    likes: 1234,
-    comments: 56,
-    hashtags: ["pickleball", "volley", "pickleballtips"],
-  },
-  {
-    id: "2",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
-    caption: "Epic rally at the net! Who won? 👀",
-    username: "courtqueen",
-    likes: 892,
-    comments: 34,
-    hashtags: ["pickleball", "rally", "competitive"],
-  },
-  {
-    id: "3",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-    caption: "Serve technique breakdown 💪",
-    username: "proballer",
-    likes: 2104,
-    comments: 78,
-    hashtags: ["pickleball", "serve", "tutorial"],
-  },
-];
+interface Video {
+  id: string;
+  videoUrl: string;
+  caption: string;
+  username: string;
+  likes: number;
+  comments: number;
+  hashtags: string[];
+  userAvatar?: string;
+}
 
 const Home = () => {
+  const [videos, setVideos] = useState<Video[]>([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check if user is authenticated
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        navigate("/auth");
+      } else {
+        loadVideos();
+      }
+    });
+  }, [navigate]);
+
+  const loadVideos = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("videos")
+        .select(`
+          id,
+          video_url,
+          caption,
+          hashtags,
+          likes_count,
+          comments_count,
+          user_id,
+          profiles:user_id (
+            username,
+            avatar_url
+          )
+        `)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      const formattedVideos: Video[] = (data || []).map((video: any) => ({
+        id: video.id,
+        videoUrl: video.video_url,
+        caption: video.caption,
+        username: video.profiles?.username || "unknown",
+        likes: video.likes_count || 0,
+        comments: video.comments_count || 0,
+        hashtags: video.hashtags || [],
+        userAvatar: video.profiles?.avatar_url,
+      }));
+
+      setVideos(formattedVideos);
+    } catch (error) {
+      console.error("Error loading videos:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="h-screen overflow-hidden bg-background">
-      <VideoFeed videos={mockVideos} />
+      <VideoFeed videos={videos} />
       <MobileNav />
     </div>
   );
