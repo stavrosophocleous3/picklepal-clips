@@ -34,35 +34,42 @@ const Home = () => {
 
   const loadVideos = async () => {
     try {
-      const { data, error } = await supabase
+      // Fetch videos
+      const { data: videosData, error: videosError } = await supabase
         .from("videos")
-        .select(`
-          id,
-          video_url,
-          caption,
-          hashtags,
-          likes_count,
-          comments_count,
-          user_id,
-          profiles:user_id (
-            username,
-            avatar_url
-          )
-        `)
+        .select("*")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (videosError) throw videosError;
 
-      const formattedVideos: Video[] = (data || []).map((video: any) => ({
-        id: video.id,
-        videoUrl: video.video_url,
-        caption: video.caption,
-        username: video.profiles?.username || "unknown",
-        likes: video.likes_count || 0,
-        comments: video.comments_count || 0,
-        hashtags: video.hashtags || [],
-        userAvatar: video.profiles?.avatar_url,
-      }));
+      // Fetch all unique user profiles
+      const userIds = [...new Set(videosData?.map(v => v.user_id) || [])];
+      const { data: profilesData, error: profilesError } = await supabase
+        .from("profiles")
+        .select("id, username, avatar_url")
+        .in("id", userIds);
+
+      if (profilesError) throw profilesError;
+
+      // Create a map of profiles for quick lookup
+      const profilesMap = new Map(
+        profilesData?.map(p => [p.id, p]) || []
+      );
+
+      // Combine videos with profiles
+      const formattedVideos: Video[] = (videosData || []).map((video) => {
+        const profile = profilesMap.get(video.user_id);
+        return {
+          id: video.id,
+          videoUrl: video.video_url,
+          caption: video.caption,
+          username: profile?.username || "unknown",
+          likes: video.likes_count || 0,
+          comments: video.comments_count || 0,
+          hashtags: video.hashtags || [],
+          userAvatar: profile?.avatar_url,
+        };
+      });
 
       setVideos(formattedVideos);
     } catch (error) {
