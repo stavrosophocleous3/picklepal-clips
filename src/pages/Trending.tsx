@@ -39,7 +39,7 @@ const Trending = () => {
       setError(null);
       setLoading(true);
 
-      // Fetch videos sorted by engagement score (likes + comments)
+      // Fetch videos with their creation timestamps
       const { data: videosData, error: videosError } = await supabase
         .from("videos")
         .select("*")
@@ -47,11 +47,40 @@ const Trending = () => {
 
       if (videosError) throw videosError;
 
-      // Calculate trending score and sort
-      const scoredVideos = (videosData || []).map(video => ({
-        ...video,
-        trendingScore: (video.likes_count || 0) + (video.comments_count || 0) * 2
-      }));
+      // Calculate TikTok-style trending score
+      const now = new Date().getTime();
+      const scoredVideos = (videosData || []).map(video => {
+        const createdAt = new Date(video.created_at).getTime();
+        const ageInHours = (now - createdAt) / (1000 * 60 * 60);
+        
+        // Weights (TikTok-style)
+        const likes = video.likes_count || 0;
+        const comments = (video.comments_count || 0) * 3; // Comments worth 3x likes
+        const shares = 0; // We don't have shares yet, but worth 5x likes
+        
+        // Total engagement
+        const totalEngagement = likes + comments + shares;
+        
+        // Engagement velocity (engagement per hour)
+        const engagementVelocity = ageInHours > 0 ? totalEngagement / ageInHours : totalEngagement;
+        
+        // Time decay factor (newer videos get boost)
+        // Videos lose 50% of their score every 24 hours
+        const timeDecay = Math.pow(0.5, ageInHours / 24);
+        
+        // Recency boost for videos under 6 hours old
+        const recencyBoost = ageInHours < 6 ? 1.5 : 1;
+        
+        // Final trending score
+        const trendingScore = engagementVelocity * timeDecay * recencyBoost;
+        
+        return {
+          ...video,
+          trendingScore,
+          engagementVelocity,
+          ageInHours
+        };
+      });
 
       // Sort by trending score
       scoredVideos.sort((a, b) => b.trendingScore - a.trendingScore);
