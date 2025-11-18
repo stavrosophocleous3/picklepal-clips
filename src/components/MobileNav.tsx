@@ -34,6 +34,15 @@ export const MobileNav = () => {
         </NavLink>
 
         <NavLink
+          to="/pickle-lab"
+          className="flex flex-col items-center justify-center gap-1 transition-colors text-muted-foreground"
+          activeClassName="text-primary"
+        >
+          <HelpCircle className="w-6 h-6" />
+          <span className="text-xs font-medium">Pickle Lab</span>
+        </NavLink>
+
+        <NavLink
           to="/following"
           className="flex flex-col items-center justify-center gap-1 transition-colors text-muted-foreground"
           activeClassName="text-primary"
@@ -49,15 +58,6 @@ export const MobileNav = () => {
         >
           <Search className="w-6 h-6" />
           <span className="text-xs font-medium">Search</span>
-        </NavLink>
-
-        <NavLink
-          to="/pickle-lab"
-          className="flex flex-col items-center justify-center gap-1 transition-colors text-muted-foreground"
-          activeClassName="text-primary"
-        >
-          <HelpCircle className="w-6 h-6" />
-          <span className="text-xs font-medium">Pickle Lab</span>
         </NavLink>
       </div>
     </nav>
