@@ -10,6 +10,7 @@ import Upload from "./pages/Upload";
 import Search from "./pages/Search";
 import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
+import PickleHelp from "./pages/PickleHelp";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
           <Route path="/search" element={<Search />} />
           <Route path="/profile/:userId" element={<Profile />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/pickle-help" element={<PickleHelp />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
