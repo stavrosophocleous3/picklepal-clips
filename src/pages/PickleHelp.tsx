@@ -10,8 +10,8 @@ const PickleHelp = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/20 mb-4 animate-bounce">
             <HelpCircle className="w-8 h-8 text-primary" />
           </div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Pickle Help</h1>
-          <p className="text-muted-foreground">We're here to help you!</p>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Pickle Lab</h1>
+          <p className="text-muted-foreground">Experiment and explore!</p>
         </div>
 
         {/* Help Categories */}
