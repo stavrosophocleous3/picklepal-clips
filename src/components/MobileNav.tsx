@@ -1,11 +1,11 @@
-import { Home, TrendingUp, UserPlus, PlusSquare, Search } from "lucide-react";
+import { Home, TrendingUp, UserPlus, PlusSquare, Search, HelpCircle } from "lucide-react";
 import { NavLink } from "./NavLink";
 import { cn } from "@/lib/utils";
 
 export const MobileNav = () => {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border">
-      <div className="flex items-center justify-around h-16 max-w-lg mx-auto px-4">
+      <div className="flex items-center justify-around h-16 max-w-lg mx-auto px-2">
         <NavLink
           to="/"
           className="flex flex-col items-center justify-center gap-1 transition-colors text-muted-foreground"
@@ -49,6 +49,15 @@ export const MobileNav = () => {
         >
           <Search className="w-6 h-6" />
           <span className="text-xs font-medium">Search</span>
+        </NavLink>
+
+        <NavLink
+          to="/pickle-help"
+          className="flex flex-col items-center justify-center gap-1 transition-colors text-muted-foreground"
+          activeClassName="text-primary"
+        >
+          <HelpCircle className="w-6 h-6" />
+          <span className="text-xs font-medium">Help</span>
         </NavLink>
       </div>
     </nav>
