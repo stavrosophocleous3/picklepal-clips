@@ -29,7 +29,7 @@ const App = () => (
           <Route path="/search" element={<Search />} />
           <Route path="/profile/:userId" element={<Profile />} />
           <Route path="/auth" element={<Auth />} />
-          <Route path="/pickle-help" element={<PickleHelp />} />
+          <Route path="/pickle-lab" element={<PickleHelp />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
