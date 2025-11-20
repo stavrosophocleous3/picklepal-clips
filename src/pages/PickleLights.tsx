@@ -1,5 +1,6 @@
 import { MobileNav } from "@/components/MobileNav";
-import { Lightbulb } from "lucide-react";
+import { Trophy, GraduationCap } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const PickleLights = () => {
   return (
@@ -10,16 +11,40 @@ const PickleLights = () => {
         </div>
       </header>
 
-      <main className="container max-w-lg mx-auto px-4 py-6">
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-            <Lightbulb className="w-8 h-8 text-primary" />
-          </div>
-          <h2 className="text-2xl font-bold mb-2">Pickle Lights</h2>
-          <p className="text-muted-foreground max-w-sm">
-            Discover insights and highlights from the pickleball community
-          </p>
-        </div>
+      <main className="container max-w-lg mx-auto px-4 py-6 space-y-6">
+        {/* Player Highlights Section */}
+        <Card className="animate-fade-in">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <Trophy className="w-5 h-5 text-primary" />
+              </div>
+              <CardTitle>Player Highlights</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground">
+              Discover amazing plays and achievements from top pickleball players
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Coaching Highlights Section */}
+        <Card className="animate-fade-in">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <GraduationCap className="w-5 h-5 text-primary" />
+              </div>
+              <CardTitle>Coaching Highlights</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground">
+              Expert coaching tips and techniques to elevate your game
+            </p>
+          </CardContent>
+        </Card>
       </main>
 
       <MobileNav />
