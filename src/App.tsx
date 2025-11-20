@@ -12,6 +12,7 @@ import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
 import PickleHelp from "./pages/PickleHelp";
 import Coaches from "./pages/Coaches";
+import PickleLights from "./pages/PickleLights";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/pickle-lab" element={<PickleHelp />} />
           <Route path="/coaches" element={<Coaches />} />
+          <Route path="/pickle-lights" element={<PickleLights />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
