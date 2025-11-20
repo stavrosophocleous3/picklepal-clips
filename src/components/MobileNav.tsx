@@ -1,4 +1,4 @@
-import { Home, TrendingUp, UserPlus, PlusSquare, Search, HelpCircle } from "lucide-react";
+import { Home, TrendingUp, UserPlus, PlusSquare, Search, HelpCircle, Users } from "lucide-react";
 import { NavLink } from "./NavLink";
 import { cn } from "@/lib/utils";
 
@@ -40,6 +40,15 @@ export const MobileNav = () => {
         >
           <HelpCircle className="w-6 h-6" />
           <span className="text-xs font-medium">Pickle Lab</span>
+        </NavLink>
+
+        <NavLink
+          to="/coaches"
+          className="flex flex-col items-center justify-center gap-1 transition-colors text-muted-foreground"
+          activeClassName="text-primary"
+        >
+          <Users className="w-6 h-6" />
+          <span className="text-xs font-medium">Coaches</span>
         </NavLink>
 
         <NavLink
