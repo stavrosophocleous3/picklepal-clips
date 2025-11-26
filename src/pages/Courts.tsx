@@ -4,10 +4,17 @@ import { MobileNav } from "@/components/MobileNav";
 import { MapPin, Clock } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const Courts = () => {
   const { toast } = useToast();
-  const [selectedCourt, setSelectedCourt] = useState<number | null>(null);
+  const [selectedCourt, setSelectedCourt] = useState<{ id: number; name: string } | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const courts = [
     { id: 1, name: "Court 1", available: true },
@@ -18,12 +25,34 @@ const Courts = () => {
     { id: 6, name: "Court 6", available: false },
   ];
 
-  const handleReserve = (courtId: number, courtName: string) => {
-    toast({
-      title: "Court Reserved!",
-      description: `${courtName} has been reserved for 1.5 hours.`,
-    });
-    setSelectedCourt(null);
+  const timeSlots = [
+    { start: "8:00 AM", end: "9:30 AM" },
+    { start: "9:30 AM", end: "11:00 AM" },
+    { start: "11:00 AM", end: "12:30 PM" },
+    { start: "12:30 PM", end: "2:00 PM" },
+    { start: "2:00 PM", end: "3:30 PM" },
+    { start: "3:30 PM", end: "5:00 PM" },
+    { start: "5:00 PM", end: "6:30 PM" },
+    { start: "6:30 PM", end: "8:00 PM" },
+    { start: "7:30 PM", end: "9:00 PM" },
+  ];
+
+  const handleCourtClick = (court: { id: number; name: string; available: boolean }) => {
+    if (court.available) {
+      setSelectedCourt({ id: court.id, name: court.name });
+      setDialogOpen(true);
+    }
+  };
+
+  const handleTimeSlotSelect = (slot: { start: string; end: string }) => {
+    if (selectedCourt) {
+      toast({
+        title: "Court Reserved!",
+        description: `${selectedCourt.name} reserved from ${slot.start} to ${slot.end}`,
+      });
+      setDialogOpen(false);
+      setSelectedCourt(null);
+    }
   };
 
   return (
@@ -45,8 +74,8 @@ const Courts = () => {
                 court.available
                   ? "hover:border-primary cursor-pointer"
                   : "opacity-60"
-              } ${selectedCourt === court.id ? "border-primary ring-2 ring-primary" : ""}`}
-              onClick={() => court.available && setSelectedCourt(court.id)}
+              }`}
+              onClick={() => handleCourtClick(court)}
             >
               <div className="flex flex-col gap-4">
                 <div className="flex items-center justify-between">
@@ -72,7 +101,7 @@ const Courts = () => {
                   disabled={!court.available}
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleReserve(court.id, court.name);
+                    handleCourtClick(court);
                   }}
                 >
                   {court.available ? "Reserve Court" : "Not Available"}
@@ -82,6 +111,32 @@ const Courts = () => {
           ))}
         </div>
       </div>
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Clock className="w-5 h-5 text-primary" />
+              Select Time Slot - {selectedCourt?.name}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-2 mt-4">
+            {timeSlots.map((slot, index) => (
+              <Button
+                key={index}
+                variant="outline"
+                className="w-full justify-between py-6 hover:bg-primary hover:text-primary-foreground"
+                onClick={() => handleTimeSlotSelect(slot)}
+              >
+                <span className="font-medium">{slot.start}</span>
+                <span className="text-muted-foreground">→</span>
+                <span className="font-medium">{slot.end}</span>
+              </Button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <MobileNav />
     </div>
   );
