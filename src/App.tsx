@@ -14,6 +14,7 @@ import PickleHelp from "./pages/PickleHelp";
 import Coaches from "./pages/Coaches";
 import PickleLights from "./pages/PickleLights";
 import PicklePoints from "./pages/PicklePoints";
+import Courts from "./pages/Courts";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const App = () => (
           <Route path="/coaches" element={<Coaches />} />
           <Route path="/pickle-lights" element={<PickleLights />} />
           <Route path="/pickle-points" element={<PicklePoints />} />
+          <Route path="/courts" element={<Courts />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
