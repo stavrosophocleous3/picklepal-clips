@@ -20,6 +20,7 @@ const Courts = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [namesDialogOpen, setNamesDialogOpen] = useState(false);
   const [playerNames, setPlayerNames] = useState<string[]>(["", "", "", ""]);
+  const [bookedCourts, setBookedCourts] = useState<Set<number>>(new Set());
 
   const courts = [
     // A Courts (A1-A8)
@@ -98,6 +99,9 @@ const Courts = () => {
     }
 
     if (selectedCourt && selectedTimeSlot) {
+      // Mark court as booked
+      setBookedCourts(prev => new Set([...prev, selectedCourt.id]));
+      
       toast({
         title: "Court Reserved!",
         description: `${selectedCourt.name} reserved from ${selectedTimeSlot.start} to ${selectedTimeSlot.end} for ${playerNames.join(", ")}`,
@@ -121,29 +125,35 @@ const Courts = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {courts.map((court) => (
-            <Card
-              key={court.id}
-              className={`p-6 transition-all ${
-                court.available
-                  ? "hover:border-primary cursor-pointer"
-                  : "opacity-60"
-              }`}
-              onClick={() => handleCourtClick(court)}
-            >
-              <div className="flex flex-col gap-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xl font-semibold">{court.name}</h3>
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      court.available
-                        ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
-                        : "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
-                    }`}
-                  >
-                    {court.available ? "Available" : "Reserved"}
-                  </span>
-                </div>
+          {courts.map((court) => {
+            const isBooked = bookedCourts.has(court.id);
+            const isAvailable = court.available && !isBooked;
+            
+            return (
+              <Card
+                key={court.id}
+                className={`p-6 transition-all ${
+                  isAvailable
+                    ? "hover:border-primary cursor-pointer"
+                    : "opacity-60"
+                }`}
+                onClick={() => handleCourtClick({ ...court, available: isAvailable })}
+              >
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className={`text-xl font-semibold ${!isAvailable ? "line-through" : ""}`}>
+                      {court.name}
+                    </h3>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        isAvailable
+                          ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
+                          : "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
+                      }`}
+                    >
+                      {isAvailable ? "Available" : "Reserved"}
+                    </span>
+                  </div>
 
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Clock className="w-4 h-4" />
@@ -152,17 +162,18 @@ const Courts = () => {
 
                 <Button
                   className="w-full"
-                  disabled={!court.available}
+                  disabled={!isAvailable}
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleCourtClick(court);
+                    handleCourtClick({ ...court, available: isAvailable });
                   }}
                 >
-                  {court.available ? "Reserve Court" : "Not Available"}
+                  {isAvailable ? "Reserve Court" : "Not Available"}
                 </Button>
               </div>
             </Card>
-          ))}
+          );
+          })}
         </div>
       </div>
 
