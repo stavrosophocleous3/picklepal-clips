@@ -20,7 +20,7 @@ const Courts = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [namesDialogOpen, setNamesDialogOpen] = useState(false);
   const [playerNames, setPlayerNames] = useState<string[]>(["", "", "", ""]);
-  const [bookedCourts, setBookedCourts] = useState<Set<number>>(new Set());
+  const [bookedSlots, setBookedSlots] = useState<Map<number, Set<string>>>(new Map());
 
   const courts = [
     // A Courts (A1-A8)
@@ -99,8 +99,14 @@ const Courts = () => {
     }
 
     if (selectedCourt && selectedTimeSlot) {
-      // Mark court as booked
-      setBookedCourts(prev => new Set([...prev, selectedCourt.id]));
+      // Mark specific time slot as booked for this court
+      setBookedSlots(prev => {
+        const newMap = new Map(prev);
+        const courtSlots = newMap.get(selectedCourt.id) || new Set();
+        courtSlots.add(`${selectedTimeSlot.start}-${selectedTimeSlot.end}`);
+        newMap.set(selectedCourt.id, courtSlots);
+        return newMap;
+      });
       
       toast({
         title: "Court Reserved!",
@@ -125,35 +131,29 @@ const Courts = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {courts.map((court) => {
-            const isBooked = bookedCourts.has(court.id);
-            const isAvailable = court.available && !isBooked;
-            
-            return (
-              <Card
-                key={court.id}
-                className={`p-6 transition-all ${
-                  isAvailable
-                    ? "hover:border-primary cursor-pointer"
-                    : "opacity-60"
-                }`}
-                onClick={() => handleCourtClick({ ...court, available: isAvailable })}
-              >
-                <div className="flex flex-col gap-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className={`text-xl font-semibold ${!isAvailable ? "line-through" : ""}`}>
-                      {court.name}
-                    </h3>
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        isAvailable
-                          ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
-                          : "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
-                      }`}
-                    >
-                      {isAvailable ? "Available" : "Reserved"}
-                    </span>
-                  </div>
+          {courts.map((court) => (
+            <Card
+              key={court.id}
+              className={`p-6 transition-all ${
+                court.available
+                  ? "hover:border-primary cursor-pointer"
+                  : "opacity-60"
+              }`}
+              onClick={() => handleCourtClick(court)}
+            >
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xl font-semibold">{court.name}</h3>
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      court.available
+                        ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
+                        : "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
+                    }`}
+                  >
+                    {court.available ? "Available" : "Reserved"}
+                  </span>
+                </div>
 
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Clock className="w-4 h-4" />
@@ -162,18 +162,17 @@ const Courts = () => {
 
                 <Button
                   className="w-full"
-                  disabled={!isAvailable}
+                  disabled={!court.available}
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleCourtClick({ ...court, available: isAvailable });
+                    handleCourtClick(court);
                   }}
                 >
-                  {isAvailable ? "Reserve Court" : "Not Available"}
+                  {court.available ? "Reserve Court" : "Not Available"}
                 </Button>
               </div>
             </Card>
-          );
-          })}
+          ))}
         </div>
       </div>
 
@@ -186,18 +185,32 @@ const Courts = () => {
             </DialogTitle>
           </DialogHeader>
           <div className="grid gap-2 mt-4">
-            {timeSlots.map((slot, index) => (
-              <Button
-                key={index}
-                variant="outline"
-                className="w-full justify-between py-6 hover:bg-primary hover:text-primary-foreground"
-                onClick={() => handleTimeSlotSelect(slot)}
-              >
-                <span className="font-medium">{slot.start}</span>
-                <span className="text-muted-foreground">→</span>
-                <span className="font-medium">{slot.end}</span>
-              </Button>
-            ))}
+            {timeSlots.map((slot, index) => {
+              const slotKey = `${slot.start}-${slot.end}`;
+              const courtSlots = selectedCourt ? bookedSlots.get(selectedCourt.id) : new Set();
+              const isSlotBooked = courtSlots?.has(slotKey);
+              
+              return (
+                <Button
+                  key={index}
+                  variant="outline"
+                  className="w-full justify-between py-6 hover:bg-primary hover:text-primary-foreground disabled:opacity-60"
+                  onClick={() => handleTimeSlotSelect(slot)}
+                  disabled={isSlotBooked}
+                >
+                  <span className={`font-medium ${isSlotBooked ? "line-through" : ""}`}>
+                    {slot.start}
+                  </span>
+                  <span className="text-muted-foreground">→</span>
+                  <span className={`font-medium ${isSlotBooked ? "line-through" : ""}`}>
+                    {slot.end}
+                  </span>
+                  {isSlotBooked && (
+                    <span className="text-xs text-red-600 dark:text-red-400 ml-2">Reserved</span>
+                  )}
+                </Button>
+              );
+            })}
           </div>
         </DialogContent>
       </Dialog>
