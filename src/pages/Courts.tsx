@@ -17,12 +17,36 @@ const Courts = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const courts = [
-    { id: 1, name: "Court 1", available: true },
-    { id: 2, name: "Court 2", available: true },
-    { id: 3, name: "Court 3", available: false },
-    { id: 4, name: "Court 4", available: true },
-    { id: 5, name: "Court 5", available: true },
-    { id: 6, name: "Court 6", available: false },
+    // A Courts (A1-A8)
+    { id: 1, name: "A1", available: true },
+    { id: 2, name: "A2", available: true },
+    { id: 3, name: "A3", available: false },
+    { id: 4, name: "A4", available: true },
+    { id: 5, name: "A5", available: true },
+    { id: 6, name: "A6", available: false },
+    { id: 7, name: "A7", available: true },
+    { id: 8, name: "A8", available: true },
+    // B Courts (B1-B8)
+    { id: 9, name: "B1", available: true },
+    { id: 10, name: "B2", available: false },
+    { id: 11, name: "B3", available: true },
+    { id: 12, name: "B4", available: true },
+    { id: 13, name: "B5", available: false },
+    { id: 14, name: "B6", available: true },
+    { id: 15, name: "B7", available: true },
+    { id: 16, name: "B8", available: true },
+    // C Courts (C1-C6)
+    { id: 17, name: "C1", available: true },
+    { id: 18, name: "C2", available: false },
+    { id: 19, name: "C3", available: true },
+    { id: 20, name: "C4", available: true },
+    { id: 21, name: "C5", available: true },
+    { id: 22, name: "C6", available: false },
+    // D Courts (D1-D4)
+    { id: 23, name: "D1", available: true },
+    { id: 24, name: "D2", available: true },
+    { id: 25, name: "D3", available: false },
+    { id: 26, name: "D4", available: true },
   ];
 
   const timeSlots = [
