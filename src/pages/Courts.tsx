@@ -4,6 +4,8 @@ import { MobileNav } from "@/components/MobileNav";
 import { MapPin, Clock } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -14,7 +16,10 @@ import {
 const Courts = () => {
   const { toast } = useToast();
   const [selectedCourt, setSelectedCourt] = useState<{ id: number; name: string } | null>(null);
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState<{ start: string; end: string } | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [namesDialogOpen, setNamesDialogOpen] = useState(false);
+  const [playerNames, setPlayerNames] = useState<string[]>(["", "", "", ""]);
 
   const courts = [
     // A Courts (A1-A8)
@@ -69,13 +74,38 @@ const Courts = () => {
   };
 
   const handleTimeSlotSelect = (slot: { start: string; end: string }) => {
-    if (selectedCourt) {
+    setSelectedTimeSlot(slot);
+    setDialogOpen(false);
+    setNamesDialogOpen(true);
+  };
+
+  const handlePlayerNameChange = (index: number, value: string) => {
+    const newNames = [...playerNames];
+    newNames[index] = value;
+    setPlayerNames(newNames);
+  };
+
+  const handleReservationSubmit = () => {
+    const allNamesFilled = playerNames.every(name => name.trim() !== "");
+    
+    if (!allNamesFilled) {
+      toast({
+        title: "Missing Player Names",
+        description: "Please enter all 4 player names",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (selectedCourt && selectedTimeSlot) {
       toast({
         title: "Court Reserved!",
-        description: `${selectedCourt.name} reserved from ${slot.start} to ${slot.end}`,
+        description: `${selectedCourt.name} reserved from ${selectedTimeSlot.start} to ${selectedTimeSlot.end} for ${playerNames.join(", ")}`,
       });
-      setDialogOpen(false);
+      setNamesDialogOpen(false);
       setSelectedCourt(null);
+      setSelectedTimeSlot(null);
+      setPlayerNames(["", "", "", ""]);
     }
   };
 
@@ -157,6 +187,39 @@ const Courts = () => {
                 <span className="font-medium">{slot.end}</span>
               </Button>
             ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={namesDialogOpen} onOpenChange={setNamesDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-primary" />
+              Enter Player Names - {selectedCourt?.name}
+            </DialogTitle>
+            <p className="text-sm text-muted-foreground mt-2">
+              {selectedTimeSlot?.start} - {selectedTimeSlot?.end}
+            </p>
+          </DialogHeader>
+          <div className="grid gap-4 mt-4">
+            {[1, 2, 3, 4].map((num, index) => (
+              <div key={num} className="grid gap-2">
+                <Label htmlFor={`player-${num}`}>Player {num}</Label>
+                <Input
+                  id={`player-${num}`}
+                  placeholder={`Enter player ${num} name`}
+                  value={playerNames[index]}
+                  onChange={(e) => handlePlayerNameChange(index, e.target.value)}
+                />
+              </div>
+            ))}
+            <Button 
+              className="w-full mt-2" 
+              onClick={handleReservationSubmit}
+            >
+              Confirm Reservation
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
