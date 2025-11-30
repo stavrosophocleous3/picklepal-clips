@@ -20,10 +20,12 @@ const Courts = () => {
   const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedTimeSlots, setSelectedTimeSlots] = useState<{ start: string; end: string }[]>([]);
+  const [finalTimeSlot, setFinalTimeSlot] = useState<{ start: string; end: string } | null>(null);
   const [selectedCourt, setSelectedCourt] = useState<{ id: number; name: string } | null>(null);
   const [dateDialogOpen, setDateDialogOpen] = useState(false);
   const [timeSlotDialogOpen, setTimeSlotDialogOpen] = useState(false);
   const [courtDialogOpen, setCourtDialogOpen] = useState(false);
+  const [finalSlotDialogOpen, setFinalSlotDialogOpen] = useState(false);
   const [namesDialogOpen, setNamesDialogOpen] = useState(false);
   const [playerNames, setPlayerNames] = useState<string[]>(["", "", "", ""]);
   const [bookedSlots, setBookedSlots] = useState<Map<number, Set<string>>>(new Map());
@@ -122,8 +124,14 @@ const Courts = () => {
     if (court.available && selectedDate && selectedTimeSlots.length > 0) {
       setSelectedCourt({ id: court.id, name: court.name });
       setCourtDialogOpen(false);
-      setNamesDialogOpen(true);
+      setFinalSlotDialogOpen(true);
     }
+  };
+
+  const handleFinalSlotSelect = (slot: { start: string; end: string }) => {
+    setFinalTimeSlot(slot);
+    setFinalSlotDialogOpen(false);
+    setNamesDialogOpen(true);
   };
 
   const handlePlayerNameChange = (index: number, value: string) => {
@@ -144,26 +152,24 @@ const Courts = () => {
       return;
     }
 
-    if (selectedCourt && selectedTimeSlots.length > 0) {
-      // Mark all selected time slots as booked for this court
+    if (selectedCourt && finalTimeSlot) {
+      // Mark only the final selected time slot as booked for this court
       setBookedSlots(prev => {
         const newMap = new Map(prev);
         const courtSlots = newMap.get(selectedCourt.id) || new Set();
-        selectedTimeSlots.forEach(slot => {
-          courtSlots.add(`${slot.start}-${slot.end}`);
-        });
+        courtSlots.add(`${finalTimeSlot.start}-${finalTimeSlot.end}`);
         newMap.set(selectedCourt.id, courtSlots);
         return newMap;
       });
       
-      const timeSlotsDesc = selectedTimeSlots.map(s => `${s.start} to ${s.end}`).join(', ');
       toast({
         title: "Court Reserved!",
-        description: `${selectedCourt.name} reserved on ${selectedDate ? format(selectedDate, 'PPP') : ''} for ${timeSlotsDesc} - Players: ${playerNames.join(", ")}`,
+        description: `${selectedCourt.name} reserved on ${selectedDate ? format(selectedDate, 'PPP') : ''} for ${finalTimeSlot.start} to ${finalTimeSlot.end} - Players: ${playerNames.join(", ")}`,
       });
       setNamesDialogOpen(false);
       setSelectedCourt(null);
       setSelectedTimeSlots([]);
+      setFinalTimeSlot(null);
       setSelectedDate(undefined);
       setShowCourts(false);
       setPlayerNames(["", "", "", ""]);
@@ -374,6 +380,35 @@ const Courts = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Final Time Slot Selection Dialog */}
+      <Dialog open={finalSlotDialogOpen} onOpenChange={setFinalSlotDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Clock className="w-5 h-5 text-primary" />
+              Select Your Time Slot - {selectedCourt?.name}
+            </DialogTitle>
+            <p className="text-sm text-muted-foreground mt-2">
+              Choose one of your preferred time slots to reserve
+            </p>
+          </DialogHeader>
+          <div className="grid gap-3 mt-4">
+            {selectedTimeSlots.map((slot, idx) => (
+              <Button
+                key={idx}
+                variant="outline"
+                className="w-full justify-between py-6 hover:border-primary"
+                onClick={() => handleFinalSlotSelect(slot)}
+              >
+                <span className="font-medium">{slot.start}</span>
+                <span className="text-muted-foreground">→</span>
+                <span className="font-medium">{slot.end}</span>
+              </Button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Player Names Dialog */}
       <Dialog open={namesDialogOpen} onOpenChange={setNamesDialogOpen}>
         <DialogContent className="max-w-md">
@@ -384,9 +419,9 @@ const Courts = () => {
             </DialogTitle>
             <div className="text-sm text-muted-foreground mt-2 space-y-1">
               <p>{selectedDate ? format(selectedDate, 'PPP') : ''}</p>
-              {selectedTimeSlots.map((slot, idx) => (
-                <p key={idx}>{slot.start} - {slot.end}</p>
-              ))}
+              {finalTimeSlot && (
+                <p>{finalTimeSlot.start} - {finalTimeSlot.end}</p>
+              )}
             </div>
           </DialogHeader>
           <div className="grid gap-4 mt-4">
