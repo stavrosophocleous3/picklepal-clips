@@ -1,26 +1,33 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MobileNav } from "@/components/MobileNav";
-import { MapPin, Clock } from "lucide-react";
+import { MapPin, Clock, Calendar as CalendarIcon } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 
 const Courts = () => {
   const { toast } = useToast();
-  const [selectedCourt, setSelectedCourt] = useState<{ id: number; name: string } | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<{ start: string; end: string } | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedCourt, setSelectedCourt] = useState<{ id: number; name: string } | null>(null);
+  const [dateDialogOpen, setDateDialogOpen] = useState(false);
+  const [timeSlotDialogOpen, setTimeSlotDialogOpen] = useState(false);
+  const [courtDialogOpen, setCourtDialogOpen] = useState(false);
   const [namesDialogOpen, setNamesDialogOpen] = useState(false);
   const [playerNames, setPlayerNames] = useState<string[]>(["", "", "", ""]);
   const [bookedSlots, setBookedSlots] = useState<Map<number, Set<string>>>(new Map());
+  const [showCourts, setShowCourts] = useState(false);
 
   const courts = [
     // A Courts (A1-A8)
@@ -67,17 +74,30 @@ const Courts = () => {
     { start: "7:30 PM", end: "9:00 PM" },
   ];
 
-  const handleCourtClick = (court: { id: number; name: string; available: boolean }) => {
-    if (court.available) {
-      setSelectedCourt({ id: court.id, name: court.name });
-      setDialogOpen(true);
+  const handleStartReservation = () => {
+    setDateDialogOpen(true);
+  };
+
+  const handleDateSelect = (date: Date | undefined) => {
+    setSelectedDate(date);
+    if (date) {
+      setDateDialogOpen(false);
+      setTimeSlotDialogOpen(true);
     }
   };
 
   const handleTimeSlotSelect = (slot: { start: string; end: string }) => {
     setSelectedTimeSlot(slot);
-    setDialogOpen(false);
-    setNamesDialogOpen(true);
+    setTimeSlotDialogOpen(false);
+    setShowCourts(true);
+  };
+
+  const handleCourtClick = (court: { id: number; name: string; available: boolean }) => {
+    if (court.available && selectedDate && selectedTimeSlot) {
+      setSelectedCourt({ id: court.id, name: court.name });
+      setCourtDialogOpen(false);
+      setNamesDialogOpen(true);
+    }
   };
 
   const handlePlayerNameChange = (index: number, value: string) => {
@@ -110,11 +130,13 @@ const Courts = () => {
       
       toast({
         title: "Court Reserved!",
-        description: `${selectedCourt.name} reserved from ${selectedTimeSlot.start} to ${selectedTimeSlot.end} for ${playerNames.join(", ")}`,
+        description: `${selectedCourt.name} reserved on ${selectedDate ? format(selectedDate, 'PPP') : ''} from ${selectedTimeSlot.start} to ${selectedTimeSlot.end} for ${playerNames.join(", ")}`,
       });
       setNamesDialogOpen(false);
       setSelectedCourt(null);
       setSelectedTimeSlot(null);
+      setSelectedDate(undefined);
+      setShowCourts(false);
       setPlayerNames(["", "", "", ""]);
     }
   };
@@ -135,6 +157,9 @@ const Courts = () => {
               variant="outline"
               onClick={() => {
                 setBookedSlots(new Map());
+                setShowCourts(false);
+                setSelectedDate(undefined);
+                setSelectedTimeSlot(null);
                 toast({
                   title: "All Reservations Cleared",
                   description: "All courts are now available",
@@ -146,91 +171,161 @@ const Courts = () => {
           )}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {courts.map((court) => (
-            <Card
-              key={court.id}
-              className={`p-6 transition-all ${
-                court.available
-                  ? "hover:border-primary cursor-pointer"
-                  : "opacity-60"
-              }`}
-              onClick={() => handleCourtClick(court)}
-            >
-              <div className="flex flex-col gap-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xl font-semibold">{court.name}</h3>
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      court.available
-                        ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
-                        : "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
-                    }`}
-                  >
-                    {court.available ? "Available" : "Reserved"}
-                  </span>
+        {!showCourts ? (
+          <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
+            <div className="text-center space-y-2">
+              <CalendarIcon className="w-16 h-16 text-primary mx-auto mb-4" />
+              <h2 className="text-2xl font-semibold">Reserve a Court</h2>
+              <p className="text-muted-foreground">Start by selecting your preferred date and time</p>
+            </div>
+            {selectedDate && selectedTimeSlot && (
+              <Card className="p-4 max-w-md">
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center gap-2">
+                    <CalendarIcon className="w-4 h-4 text-primary" />
+                    <span className="font-medium">Date:</span>
+                    <span>{format(selectedDate, 'PPP')}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-primary" />
+                    <span className="font-medium">Time:</span>
+                    <span>{selectedTimeSlot.start} - {selectedTimeSlot.end}</span>
+                  </div>
                 </div>
-
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Clock className="w-4 h-4" />
-                  <span className="text-sm">1.5 hour block</span>
+              </Card>
+            )}
+            <Button size="lg" onClick={handleStartReservation}>
+              {selectedDate && selectedTimeSlot ? 'Change Date & Time' : 'Start Reservation'}
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <Card className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-sm">
+                    <CalendarIcon className="w-4 h-4 text-primary" />
+                    <span className="font-medium">{selectedDate ? format(selectedDate, 'PPP') : ''}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Clock className="w-4 h-4 text-primary" />
+                    <span className="font-medium">{selectedTimeSlot?.start} - {selectedTimeSlot?.end}</span>
+                  </div>
                 </div>
-
-                <Button
-                  className="w-full"
-                  disabled={!court.available}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleCourtClick(court);
-                  }}
-                >
-                  {court.available ? "Reserve Court" : "Not Available"}
+                <Button variant="outline" size="sm" onClick={handleStartReservation}>
+                  Change
                 </Button>
               </div>
             </Card>
-          ))}
-        </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {courts.map((court) => {
+                const slotKey = selectedTimeSlot ? `${selectedTimeSlot.start}-${selectedTimeSlot.end}` : '';
+                const courtSlots = bookedSlots.get(court.id);
+                const isSlotBooked = courtSlots?.has(slotKey);
+                
+                return (
+                  <Card
+                    key={court.id}
+                    className={`p-6 transition-all ${
+                      !isSlotBooked
+                        ? "hover:border-primary cursor-pointer"
+                        : "opacity-60"
+                    }`}
+                    onClick={() => !isSlotBooked && handleCourtClick(court)}
+                  >
+                    <div className="flex flex-col gap-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-xl font-semibold">{court.name}</h3>
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            !isSlotBooked
+                              ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
+                              : "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
+                          }`}
+                        >
+                          {!isSlotBooked ? "Available" : "Reserved"}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Clock className="w-4 h-4" />
+                        <span className="text-sm">1.5 hour block</span>
+                      </div>
+
+                      <Button
+                        className="w-full"
+                        disabled={isSlotBooked}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCourtClick(court);
+                        }}
+                      >
+                        {!isSlotBooked ? "Reserve Court" : "Not Available"}
+                      </Button>
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+      {/* Date Selection Dialog */}
+      <Dialog open={dateDialogOpen} onOpenChange={setDateDialogOpen}>
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Clock className="w-5 h-5 text-primary" />
-              Select Time Slot - {selectedCourt?.name}
+              <CalendarIcon className="w-5 h-5 text-primary" />
+              Select Date
             </DialogTitle>
           </DialogHeader>
-          <div className="grid gap-2 mt-4">
-            {timeSlots.map((slot, index) => {
-              const slotKey = `${slot.start}-${slot.end}`;
-              const courtSlots = selectedCourt ? bookedSlots.get(selectedCourt.id) : new Set();
-              const isSlotBooked = courtSlots?.has(slotKey);
-              
-              return (
-                <Button
-                  key={index}
-                  variant="outline"
-                  className="w-full justify-between py-6 hover:bg-primary hover:text-primary-foreground disabled:opacity-60"
-                  onClick={() => handleTimeSlotSelect(slot)}
-                  disabled={isSlotBooked}
-                >
-                  <span className={`font-medium ${isSlotBooked ? "line-through" : ""}`}>
-                    {slot.start}
-                  </span>
-                  <span className="text-muted-foreground">→</span>
-                  <span className={`font-medium ${isSlotBooked ? "line-through" : ""}`}>
-                    {slot.end}
-                  </span>
-                  {isSlotBooked && (
-                    <span className="text-xs text-red-600 dark:text-red-400 ml-2">Reserved</span>
-                  )}
-                </Button>
-              );
-            })}
+          <div className="flex justify-center py-4">
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={handleDateSelect}
+              disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+              initialFocus
+              className={cn("pointer-events-auto")}
+            />
           </div>
         </DialogContent>
       </Dialog>
 
+      {/* Time Slot Selection Dialog */}
+      <Dialog open={timeSlotDialogOpen} onOpenChange={setTimeSlotDialogOpen}>
+        <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Clock className="w-5 h-5 text-primary" />
+              Select Time Slot
+            </DialogTitle>
+            {selectedDate && (
+              <p className="text-sm text-muted-foreground mt-2">
+                {format(selectedDate, 'PPP')}
+              </p>
+            )}
+          </DialogHeader>
+          <div className="grid gap-2 mt-4">
+            {timeSlots.map((slot, index) => (
+              <Button
+                key={index}
+                variant="outline"
+                className="w-full justify-between py-6 hover:bg-primary hover:text-primary-foreground"
+                onClick={() => handleTimeSlotSelect(slot)}
+              >
+                <span className="font-medium">{slot.start}</span>
+                <span className="text-muted-foreground">→</span>
+                <span className="font-medium">{slot.end}</span>
+              </Button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Player Names Dialog */}
       <Dialog open={namesDialogOpen} onOpenChange={setNamesDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
@@ -238,9 +333,10 @@ const Courts = () => {
               <MapPin className="w-5 h-5 text-primary" />
               Enter Player Names - {selectedCourt?.name}
             </DialogTitle>
-            <p className="text-sm text-muted-foreground mt-2">
-              {selectedTimeSlot?.start} - {selectedTimeSlot?.end}
-            </p>
+            <div className="text-sm text-muted-foreground mt-2 space-y-1">
+              <p>{selectedDate ? format(selectedDate, 'PPP') : ''}</p>
+              <p>{selectedTimeSlot?.start} - {selectedTimeSlot?.end}</p>
+            </div>
           </DialogHeader>
           <div className="grid gap-4 mt-4">
             {[1, 2, 3, 4].map((num, index) => (
