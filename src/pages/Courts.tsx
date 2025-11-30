@@ -257,7 +257,7 @@ const Courts = () => {
               </div>
             </Card>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {courts.map((court) => {
                 const courtSlots = bookedSlots.get(court.id);
                 const allSlotsAvailable = selectedTimeSlots.every(slot => {
