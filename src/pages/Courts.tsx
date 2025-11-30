@@ -327,7 +327,13 @@ const Courts = () => {
               mode="single"
               selected={selectedDate}
               onSelect={handleDateSelect}
-              disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+              disabled={(date) => {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const maxDate = new Date(today);
+                maxDate.setDate(maxDate.getDate() + 7);
+                return date < today || date > maxDate;
+              }}
               initialFocus
               className={cn("pointer-events-auto")}
             />
