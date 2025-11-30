@@ -19,7 +19,7 @@ import { cn } from "@/lib/utils";
 const Courts = () => {
   const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
-  const [selectedTimeSlot, setSelectedTimeSlot] = useState<{ start: string; end: string } | null>(null);
+  const [selectedTimeSlots, setSelectedTimeSlots] = useState<{ start: string; end: string }[]>([]);
   const [selectedCourt, setSelectedCourt] = useState<{ id: number; name: string } | null>(null);
   const [dateDialogOpen, setDateDialogOpen] = useState(false);
   const [timeSlotDialogOpen, setTimeSlotDialogOpen] = useState(false);
@@ -86,14 +86,40 @@ const Courts = () => {
     }
   };
 
-  const handleTimeSlotSelect = (slot: { start: string; end: string }) => {
-    setSelectedTimeSlot(slot);
+  const handleTimeSlotToggle = (slot: { start: string; end: string }) => {
+    const slotKey = `${slot.start}-${slot.end}`;
+    const isSelected = selectedTimeSlots.some(s => `${s.start}-${s.end}` === slotKey);
+    
+    if (isSelected) {
+      setSelectedTimeSlots(selectedTimeSlots.filter(s => `${s.start}-${s.end}` !== slotKey));
+    } else {
+      if (selectedTimeSlots.length < 2) {
+        setSelectedTimeSlots([...selectedTimeSlots, slot]);
+      } else {
+        toast({
+          title: "Maximum 2 time slots",
+          description: "You can only select up to 2 preferred time slots",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const handleTimeSlotsConfirm = () => {
+    if (selectedTimeSlots.length === 0) {
+      toast({
+        title: "No time slots selected",
+        description: "Please select at least 1 time slot",
+        variant: "destructive",
+      });
+      return;
+    }
     setTimeSlotDialogOpen(false);
     setShowCourts(true);
   };
 
   const handleCourtClick = (court: { id: number; name: string; available: boolean }) => {
-    if (court.available && selectedDate && selectedTimeSlot) {
+    if (court.available && selectedDate && selectedTimeSlots.length > 0) {
       setSelectedCourt({ id: court.id, name: court.name });
       setCourtDialogOpen(false);
       setNamesDialogOpen(true);
@@ -118,23 +144,26 @@ const Courts = () => {
       return;
     }
 
-    if (selectedCourt && selectedTimeSlot) {
-      // Mark specific time slot as booked for this court
+    if (selectedCourt && selectedTimeSlots.length > 0) {
+      // Mark all selected time slots as booked for this court
       setBookedSlots(prev => {
         const newMap = new Map(prev);
         const courtSlots = newMap.get(selectedCourt.id) || new Set();
-        courtSlots.add(`${selectedTimeSlot.start}-${selectedTimeSlot.end}`);
+        selectedTimeSlots.forEach(slot => {
+          courtSlots.add(`${slot.start}-${slot.end}`);
+        });
         newMap.set(selectedCourt.id, courtSlots);
         return newMap;
       });
       
+      const timeSlotsDesc = selectedTimeSlots.map(s => `${s.start} to ${s.end}`).join(', ');
       toast({
         title: "Court Reserved!",
-        description: `${selectedCourt.name} reserved on ${selectedDate ? format(selectedDate, 'PPP') : ''} from ${selectedTimeSlot.start} to ${selectedTimeSlot.end} for ${playerNames.join(", ")}`,
+        description: `${selectedCourt.name} reserved on ${selectedDate ? format(selectedDate, 'PPP') : ''} for ${timeSlotsDesc} - Players: ${playerNames.join(", ")}`,
       });
       setNamesDialogOpen(false);
       setSelectedCourt(null);
-      setSelectedTimeSlot(null);
+      setSelectedTimeSlots([]);
       setSelectedDate(undefined);
       setShowCourts(false);
       setPlayerNames(["", "", "", ""]);
@@ -159,7 +188,7 @@ const Courts = () => {
                 setBookedSlots(new Map());
                 setShowCourts(false);
                 setSelectedDate(undefined);
-                setSelectedTimeSlot(null);
+                setSelectedTimeSlots([]);
                 toast({
                   title: "All Reservations Cleared",
                   description: "All courts are now available",
@@ -178,7 +207,7 @@ const Courts = () => {
               <h2 className="text-2xl font-semibold">Reserve a Court</h2>
               <p className="text-muted-foreground">Start by selecting your preferred date and time</p>
             </div>
-            {selectedDate && selectedTimeSlot && (
+            {selectedDate && selectedTimeSlots.length > 0 && (
               <Card className="p-4 max-w-md">
                 <div className="space-y-2 text-sm">
                   <div className="flex items-center gap-2">
@@ -186,16 +215,18 @@ const Courts = () => {
                     <span className="font-medium">Date:</span>
                     <span>{format(selectedDate, 'PPP')}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-primary" />
-                    <span className="font-medium">Time:</span>
-                    <span>{selectedTimeSlot.start} - {selectedTimeSlot.end}</span>
-                  </div>
+                  {selectedTimeSlots.map((slot, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-primary" />
+                      <span className="font-medium">Time {idx + 1}:</span>
+                      <span>{slot.start} - {slot.end}</span>
+                    </div>
+                  ))}
                 </div>
               </Card>
             )}
             <Button size="lg" onClick={handleStartReservation}>
-              {selectedDate && selectedTimeSlot ? 'Change Date & Time' : 'Start Reservation'}
+              {selectedDate && selectedTimeSlots.length > 0 ? 'Change Date & Time' : 'Start Reservation'}
             </Button>
           </div>
         ) : (
@@ -207,10 +238,12 @@ const Courts = () => {
                     <CalendarIcon className="w-4 h-4 text-primary" />
                     <span className="font-medium">{selectedDate ? format(selectedDate, 'PPP') : ''}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <Clock className="w-4 h-4 text-primary" />
-                    <span className="font-medium">{selectedTimeSlot?.start} - {selectedTimeSlot?.end}</span>
-                  </div>
+                  {selectedTimeSlots.map((slot, idx) => (
+                    <div key={idx} className="flex items-center gap-2 text-sm">
+                      <Clock className="w-4 h-4 text-primary" />
+                      <span className="font-medium">Time {idx + 1}: {slot.start} - {slot.end}</span>
+                    </div>
+                  ))}
                 </div>
                 <Button variant="outline" size="sm" onClick={handleStartReservation}>
                   Change
@@ -220,31 +253,33 @@ const Courts = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {courts.map((court) => {
-                const slotKey = selectedTimeSlot ? `${selectedTimeSlot.start}-${selectedTimeSlot.end}` : '';
                 const courtSlots = bookedSlots.get(court.id);
-                const isSlotBooked = courtSlots?.has(slotKey);
+                const allSlotsAvailable = selectedTimeSlots.every(slot => {
+                  const slotKey = `${slot.start}-${slot.end}`;
+                  return !courtSlots?.has(slotKey);
+                });
                 
                 return (
                   <Card
                     key={court.id}
                     className={`p-6 transition-all ${
-                      !isSlotBooked
+                      allSlotsAvailable
                         ? "hover:border-primary cursor-pointer"
                         : "opacity-60"
                     }`}
-                    onClick={() => !isSlotBooked && handleCourtClick(court)}
+                    onClick={() => allSlotsAvailable && handleCourtClick(court)}
                   >
                     <div className="flex flex-col gap-4">
                       <div className="flex items-center justify-between">
                         <h3 className="text-xl font-semibold">{court.name}</h3>
                         <span
                           className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            !isSlotBooked
+                            allSlotsAvailable
                               ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
                               : "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
                           }`}
                         >
-                          {!isSlotBooked ? "Available" : "Reserved"}
+                          {allSlotsAvailable ? "Available" : "Reserved"}
                         </span>
                       </div>
 
@@ -255,13 +290,13 @@ const Courts = () => {
 
                       <Button
                         className="w-full"
-                        disabled={isSlotBooked}
+                        disabled={!allSlotsAvailable}
                         onClick={(e) => {
                           e.stopPropagation();
                           handleCourtClick(court);
                         }}
                       >
-                        {!isSlotBooked ? "Reserve Court" : "Not Available"}
+                        {allSlotsAvailable ? "Reserve Court" : "Not Available"}
                       </Button>
                     </div>
                   </Card>
@@ -300,27 +335,41 @@ const Courts = () => {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Clock className="w-5 h-5 text-primary" />
-              Select Time Slot
+              Select Time Slots (up to 2)
             </DialogTitle>
             {selectedDate && (
               <p className="text-sm text-muted-foreground mt-2">
-                {format(selectedDate, 'PPP')}
+                {format(selectedDate, 'PPP')} - {selectedTimeSlots.length} of 2 selected
               </p>
             )}
           </DialogHeader>
           <div className="grid gap-2 mt-4">
-            {timeSlots.map((slot, index) => (
-              <Button
-                key={index}
-                variant="outline"
-                className="w-full justify-between py-6 hover:bg-primary hover:text-primary-foreground"
-                onClick={() => handleTimeSlotSelect(slot)}
-              >
-                <span className="font-medium">{slot.start}</span>
-                <span className="text-muted-foreground">→</span>
-                <span className="font-medium">{slot.end}</span>
-              </Button>
-            ))}
+            {timeSlots.map((slot, index) => {
+              const slotKey = `${slot.start}-${slot.end}`;
+              const isSelected = selectedTimeSlots.some(s => `${s.start}-${s.end}` === slotKey);
+              
+              return (
+                <Button
+                  key={index}
+                  variant={isSelected ? "default" : "outline"}
+                  className="w-full justify-between py-6"
+                  onClick={() => handleTimeSlotToggle(slot)}
+                >
+                  <span className="font-medium">{slot.start}</span>
+                  <span className="text-muted-foreground">→</span>
+                  <span className="font-medium">{slot.end}</span>
+                  {isSelected && <span className="ml-2">✓</span>}
+                </Button>
+              );
+            })}
+            <Button 
+              size="lg" 
+              onClick={handleTimeSlotsConfirm}
+              disabled={selectedTimeSlots.length === 0}
+              className="mt-2"
+            >
+              Continue with {selectedTimeSlots.length} time slot{selectedTimeSlots.length !== 1 ? 's' : ''}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -335,7 +384,9 @@ const Courts = () => {
             </DialogTitle>
             <div className="text-sm text-muted-foreground mt-2 space-y-1">
               <p>{selectedDate ? format(selectedDate, 'PPP') : ''}</p>
-              <p>{selectedTimeSlot?.start} - {selectedTimeSlot?.end}</p>
+              {selectedTimeSlots.map((slot, idx) => (
+                <p key={idx}>{slot.start} - {slot.end}</p>
+              ))}
             </div>
           </DialogHeader>
           <div className="grid gap-4 mt-4">
