@@ -122,12 +122,28 @@ const Courts = () => {
   return (
     <div className="min-h-screen bg-background pb-20">
       <div className="container mx-auto px-4 py-6">
-        <div className="flex items-center gap-3 mb-6">
-          <MapPin className="w-8 h-8 text-primary" />
-          <div>
-            <h1 className="text-2xl font-bold">Courts</h1>
-            <p className="text-sm text-muted-foreground">Reserve a court for 1.5 hours</p>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <MapPin className="w-8 h-8 text-primary" />
+            <div>
+              <h1 className="text-2xl font-bold">Courts</h1>
+              <p className="text-sm text-muted-foreground">Reserve a court for 1.5 hours</p>
+            </div>
           </div>
+          {bookedSlots.size > 0 && (
+            <Button
+              variant="outline"
+              onClick={() => {
+                setBookedSlots(new Map());
+                toast({
+                  title: "All Reservations Cleared",
+                  description: "All courts are now available",
+                });
+              }}
+            >
+              Clear All Reservations
+            </Button>
+          )}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
