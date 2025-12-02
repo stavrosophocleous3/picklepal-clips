@@ -12,7 +12,7 @@ import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
 import PickleHelp from "./pages/PickleHelp";
 import Coaches from "./pages/Coaches";
-
+import GroupInvite from "./pages/GroupInvite";
 import PicklePoints from "./pages/PicklePoints";
 import Courts from "./pages/Courts";
 import NotFound from "./pages/NotFound";
@@ -35,7 +35,7 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/pickle-lab" element={<PickleHelp />} />
           <Route path="/coaches" element={<Coaches />} />
-          
+          <Route path="/invite/:groupId" element={<GroupInvite />} />
           <Route path="/pickle-points" element={<PicklePoints />} />
           <Route path="/courts" element={<Courts />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
