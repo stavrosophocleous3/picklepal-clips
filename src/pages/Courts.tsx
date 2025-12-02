@@ -241,10 +241,10 @@ const Courts = () => {
                       setTimeSlotDialogOpen(true);
                     }}
                   >
-                    <div className="flex flex-col items-center mb-1">
-                      <span className="text-[7px] font-medium leading-none">{dayName}</span>
-                      <span className="text-[9px] font-bold leading-none my-0.5">{dayNumber}</span>
-                      <span className="text-[6px] leading-none">{monthName}</span>
+                    <div className="flex items-center gap-1 mb-1 justify-center">
+                      <span className="text-[11px] font-bold leading-none">{dayName}</span>
+                      <span className="text-[11px] font-bold leading-none">{dayNumber}</span>
+                      <span className="text-[11px] font-bold leading-none">{monthName}</span>
                     </div>
                     {isSaturday && (
                       <div className="mt-1 pt-1 border-t border-border/40 w-full flex-1 flex flex-col justify-center">
