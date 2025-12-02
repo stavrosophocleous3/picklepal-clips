@@ -30,12 +30,32 @@ const PickleHelp = () => {
 
   const fetchGroups = async () => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Get groups where user is a member
+      const { data: memberData, error: memberError } = await supabase
+        .from("group_members")
+        .select("group_id")
+        .eq("user_id", user.id);
+
+      if (memberError) throw memberError;
+
+      const groupIds = memberData?.map((m) => m.group_id) || [];
+
+      if (groupIds.length === 0) {
+        setGroups([]);
+        return;
+      }
+
+      // Fetch full group details for groups where user is a member
       const { data, error } = await supabase
         .from("groups")
         .select(`
           *,
           group_members(count)
         `)
+        .in("id", groupIds)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
