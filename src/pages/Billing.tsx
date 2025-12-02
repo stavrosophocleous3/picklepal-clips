@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { MobileNav } from "@/components/MobileNav";
-import { CreditCard, Users, Calendar, DollarSign, Clock, CheckCircle, AlertCircle, Plus } from "lucide-react";
+import { CreditCard, Users, Calendar, DollarSign, Clock, CheckCircle, AlertCircle, Plus, Banknote, FileCheck, ArrowDownLeft, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
@@ -33,12 +33,55 @@ const Billing = () => {
     { id: 4, name: "Senior Pickleball", instructor: "Coach Lisa", day: "Tue/Thu", time: "10:00 AM", enrolled: 10, capacity: 12, pricePerMonth: 70 },
   ];
 
+  // Mock data for transactions
+  const transactions = [
+    { id: 1, type: "cash", direction: "in", member: "John Smith", description: "Monthly membership", amount: 100, date: "Nov 28", status: "received" },
+    { id: 2, type: "check", direction: "in", member: "Sarah Johnson", description: "Lesson payment", amount: 60, date: "Nov 27", status: "deposited", checkNumber: "1542" },
+    { id: 3, type: "check", direction: "in", member: "Mike Davis", description: "Class enrollment", amount: 80, date: "Nov 26", status: "pending", checkNumber: "3891" },
+    { id: 4, type: "cash", direction: "in", member: "Emily Wilson", description: "Drop-in court fee", amount: 15, date: "Nov 26", status: "received" },
+    { id: 5, type: "check", direction: "out", member: "Tom Brown", description: "Refund - cancelled class", amount: 40, date: "Nov 25", status: "sent", checkNumber: "0089" },
+    { id: 6, type: "check", direction: "in", member: "Lisa Park", description: "Annual membership", amount: 500, date: "Nov 24", status: "bounced", checkNumber: "7722" },
+    { id: 7, type: "cash", direction: "in", member: "James Lee", description: "Guest fee", amount: 20, date: "Nov 24", status: "received" },
+    { id: 8, type: "check", direction: "out", member: "Coach Mike", description: "Coaching pay", amount: 320, date: "Nov 22", status: "cashed", checkNumber: "0088" },
+  ];
+
   // Summary stats
   const stats = {
     totalMembers: 124,
     activeMembers: 118,
     monthlyRevenue: 8450,
     outstandingBalance: 650,
+    cashReceived: 135,
+    checksIn: 640,
+    checksPending: 80,
+    checksOut: 360,
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "received":
+      case "deposited":
+      case "cashed":
+        return <Badge className="bg-green-500 text-xs">{status}</Badge>;
+      case "pending":
+        return <Badge variant="outline" className="text-amber-500 border-amber-500 text-xs">{status}</Badge>;
+      case "sent":
+        return <Badge variant="secondary" className="text-xs">{status}</Badge>;
+      case "bounced":
+        return <Badge variant="destructive" className="text-xs">{status}</Badge>;
+      default:
+        return <Badge variant="outline" className="text-xs">{status}</Badge>;
+    }
+  };
+
+  const getTypeIcon = (type: string, direction: string) => {
+    if (type === "cash") {
+      return <Banknote className="w-4 h-4 text-green-500" />;
+    }
+    if (direction === "in") {
+      return <ArrowDownLeft className="w-4 h-4 text-blue-500" />;
+    }
+    return <ArrowUpRight className="w-4 h-4 text-orange-500" />;
   };
 
   return (
@@ -49,7 +92,7 @@ const Billing = () => {
             <CreditCard className="w-8 h-8 text-primary" />
             <div>
               <h1 className="text-2xl font-bold">Club Billing</h1>
-              <p className="text-sm text-muted-foreground">Manage memberships, lessons & classes</p>
+              <p className="text-sm text-muted-foreground">Manage memberships, lessons & payments</p>
             </div>
           </div>
           <Button size="sm">
@@ -94,9 +137,10 @@ const Billing = () => {
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="w-full mb-4">
-            <TabsTrigger value="overview" className="flex-1">Members</TabsTrigger>
-            <TabsTrigger value="lessons" className="flex-1">Lessons</TabsTrigger>
-            <TabsTrigger value="classes" className="flex-1">Classes</TabsTrigger>
+            <TabsTrigger value="overview" className="flex-1 text-xs">Members</TabsTrigger>
+            <TabsTrigger value="transactions" className="flex-1 text-xs">Transactions</TabsTrigger>
+            <TabsTrigger value="lessons" className="flex-1 text-xs">Lessons</TabsTrigger>
+            <TabsTrigger value="classes" className="flex-1 text-xs">Classes</TabsTrigger>
           </TabsList>
 
           {/* Members Tab */}
@@ -125,6 +169,84 @@ const Billing = () => {
                     <Button size="sm" variant="outline" className="mt-1 h-7 text-xs">
                       Charge
                     </Button>
+                  </div>
+                </div>
+              ))}
+            </Card>
+          </TabsContent>
+
+          {/* Transactions Tab */}
+          <TabsContent value="transactions">
+            {/* Transaction Summary */}
+            <div className="grid grid-cols-2 gap-2 mb-4">
+              <Card className="p-3 border-green-500/30 bg-green-500/5">
+                <div className="flex items-center gap-2">
+                  <Banknote className="w-4 h-4 text-green-500" />
+                  <span className="text-xs">Cash In</span>
+                </div>
+                <p className="text-lg font-bold text-green-500">${stats.cashReceived}</p>
+              </Card>
+              <Card className="p-3 border-blue-500/30 bg-blue-500/5">
+                <div className="flex items-center gap-2">
+                  <ArrowDownLeft className="w-4 h-4 text-blue-500" />
+                  <span className="text-xs">Checks In</span>
+                </div>
+                <p className="text-lg font-bold text-blue-500">${stats.checksIn}</p>
+              </Card>
+              <Card className="p-3 border-amber-500/30 bg-amber-500/5">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-amber-500" />
+                  <span className="text-xs">Checks Pending</span>
+                </div>
+                <p className="text-lg font-bold text-amber-500">${stats.checksPending}</p>
+              </Card>
+              <Card className="p-3 border-orange-500/30 bg-orange-500/5">
+                <div className="flex items-center gap-2">
+                  <ArrowUpRight className="w-4 h-4 text-orange-500" />
+                  <span className="text-xs">Checks Out</span>
+                </div>
+                <p className="text-lg font-bold text-orange-500">${stats.checksOut}</p>
+              </Card>
+            </div>
+
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="font-semibold">Recent Transactions</h3>
+              <Button size="sm" variant="outline">
+                <Plus className="w-3 h-3 mr-1" />
+                Record Payment
+              </Button>
+            </div>
+
+            <Card className="divide-y divide-border">
+              {transactions.map((tx) => (
+                <div key={tx.id} className="p-3 flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                    {getTypeIcon(tx.type, tx.direction)}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-sm">{tx.member}</p>
+                      {getStatusBadge(tx.status)}
+                    </div>
+                    <p className="text-xs text-muted-foreground">{tx.description}</p>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <span>{tx.date}</span>
+                      {tx.checkNumber && (
+                        <>
+                          <span>•</span>
+                          <span className="flex items-center gap-1">
+                            <FileCheck className="w-3 h-3" />
+                            #{tx.checkNumber}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className={`font-bold ${tx.direction === "out" ? "text-orange-500" : "text-green-500"}`}>
+                      {tx.direction === "out" ? "-" : "+"}${tx.amount}
+                    </p>
+                    <span className="text-xs text-muted-foreground capitalize">{tx.type}</span>
                   </div>
                 </div>
               ))}
