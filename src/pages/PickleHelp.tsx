@@ -92,6 +92,11 @@ const PickleHelp = () => {
     setCreateDialogOpen(false);
   };
 
+  const handleGroupLeft = () => {
+    fetchGroups();
+    setSelectedGroup(null);
+  };
+
   return (
     <div className="min-h-screen bg-background pb-20">
       <div className="max-w-lg mx-auto">
@@ -194,6 +199,7 @@ const PickleHelp = () => {
           groupId={selectedGroup}
           open={!!selectedGroup}
           onOpenChange={(open) => !open && setSelectedGroup(null)}
+          onGroupLeft={handleGroupLeft}
         />
       )}
 

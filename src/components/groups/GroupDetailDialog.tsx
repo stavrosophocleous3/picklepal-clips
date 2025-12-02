@@ -5,12 +5,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Send, UserPlus, Loader2 } from "lucide-react";
+import { Users, Send, UserPlus, Loader2, LogOut } from "lucide-react";
 import { InviteMembersDialog } from "./InviteMembersDialog";
 
 interface Message {
@@ -28,12 +38,14 @@ interface GroupDetailDialogProps {
   groupId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onGroupLeft?: () => void;
 }
 
 export const GroupDetailDialog = ({
   groupId,
   open,
   onOpenChange,
+  onGroupLeft,
 }: GroupDetailDialogProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
@@ -44,6 +56,8 @@ export const GroupDetailDialog = ({
   const [preferredDays, setPreferredDays] = useState<string[]>([]);
   const [preferredTime, setPreferredTime] = useState("");
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
+  const [leaving, setLeaving] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const { toast } = useToast();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -178,6 +192,39 @@ export const GroupDetailDialog = ({
     }
   };
 
+  const handleLeaveGroup = async () => {
+    setLeaving(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { error } = await supabase
+        .from("group_members")
+        .delete()
+        .eq("group_id", groupId)
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Left group",
+        description: "You have left the group",
+      });
+
+      setLeaveDialogOpen(false);
+      onOpenChange(false);
+      onGroupLeft?.();
+    } catch (error: any) {
+      toast({
+        title: "Error leaving group",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLeaving(false);
+    }
+  };
+
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -203,15 +250,26 @@ export const GroupDetailDialog = ({
                   )}
                 </div>
               </div>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setInviteDialogOpen(true)}
-                className="gap-2"
-              >
-                <UserPlus className="w-4 h-4" />
-                Invite
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setInviteDialogOpen(true)}
+                  className="gap-2"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  Invite
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => setLeaveDialogOpen(true)}
+                  className="gap-2"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Leave
+                </Button>
+              </div>
             </div>
           </DialogHeader>
 
@@ -294,6 +352,34 @@ export const GroupDetailDialog = ({
         onOpenChange={setInviteDialogOpen}
         onMemberAdded={() => setMemberCount((prev) => prev + 1)}
       />
+
+      <AlertDialog open={leaveDialogOpen} onOpenChange={setLeaveDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Leave Group</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to leave your friends :( You will no longer have access to the group chat and won't see any new messages.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleLeaveGroup}
+              disabled={leaving}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {leaving ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Leaving...
+                </>
+              ) : (
+                "Leave Group"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };
