@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { MobileNav } from "@/components/MobileNav";
 import { Button } from "@/components/ui/button";
 import { Plus, Users, MessageCircle } from "lucide-react";
@@ -21,7 +22,9 @@ const PickleHelp = () => {
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const fetchGroups = async () => {
     try {
@@ -53,7 +56,33 @@ const PickleHelp = () => {
   };
 
   useEffect(() => {
-    fetchGroups();
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setIsAuthenticated(false);
+        setLoading(false);
+        return;
+      }
+      setIsAuthenticated(true);
+      fetchGroups();
+    };
+
+    checkAuth();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) {
+        setIsAuthenticated(false);
+        setGroups([]);
+      } else {
+        setIsAuthenticated(true);
+        fetchGroups();
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const handleGroupCreated = () => {
@@ -87,7 +116,17 @@ const PickleHelp = () => {
         <div className="p-4 space-y-3">
           {loading ? (
             <div className="text-center py-8 text-muted-foreground">
-              Loading groups...
+              Loading...
+            </div>
+          ) : !isAuthenticated ? (
+            <div className="text-center py-12">
+              <Users className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
+              <p className="text-muted-foreground mb-4">
+                Please log in to view and create groups
+              </p>
+              <Button onClick={() => navigate("/auth")}>
+                Go to Login
+              </Button>
             </div>
           ) : groups.length === 0 ? (
             <div className="text-center py-12">
