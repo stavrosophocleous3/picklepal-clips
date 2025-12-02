@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const [useMagicLink, setUseMagicLink] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
@@ -37,7 +38,23 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      if (isLogin) {
+      if (useMagicLink) {
+        // Magic link authentication
+        const { error } = await supabase.auth.signInWithOtp({
+          email,
+          options: {
+            emailRedirectTo: `${window.location.origin}/`,
+            data: !isLogin ? { username } : undefined,
+          },
+        });
+
+        if (error) throw error;
+
+        toast({
+          title: "Check your email!",
+          description: "We sent you a magic link to sign in",
+        });
+      } else if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
@@ -103,7 +120,7 @@ const Auth = () => {
 
         <div className="bg-card p-8 rounded-2xl shadow-sm">
           <form onSubmit={handleAuth} className="space-y-4">
-            {!isLogin && (
+            {!isLogin && !useMagicLink && (
               <div>
                 <Label htmlFor="username">Username</Label>
                 <Input
@@ -111,7 +128,7 @@ const Auth = () => {
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  required={!isLogin}
+                  required={!isLogin && !useMagicLink}
                   placeholder="Choose a username"
                 />
               </div>
@@ -129,32 +146,50 @@ const Auth = () => {
               />
             </div>
 
-            <div>
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                placeholder="••••••••"
-                minLength={6}
-              />
-            </div>
+            {!useMagicLink && (
+              <div>
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required={!useMagicLink}
+                  placeholder="••••••••"
+                  minLength={6}
+                />
+              </div>
+            )}
 
             <Button type="submit" className="w-full" size="lg" disabled={loading}>
-              {loading ? "Loading..." : isLogin ? "Sign In" : "Sign Up"}
+              {loading 
+                ? "Loading..." 
+                : useMagicLink 
+                ? "Send Magic Link" 
+                : isLogin 
+                ? "Sign In" 
+                : "Sign Up"}
             </Button>
           </form>
 
-          <div className="mt-4 text-center">
+          <div className="mt-4 space-y-2">
             <button
               type="button"
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-sm text-primary hover:underline"
+              onClick={() => setUseMagicLink(!useMagicLink)}
+              className="w-full text-sm text-muted-foreground hover:text-primary transition-colors"
             >
-              {isLogin ? "Need an account? Sign up" : "Already have an account? Sign in"}
+              {useMagicLink ? "Use password instead" : "Or sign in with magic link"}
             </button>
+            
+            {!useMagicLink && (
+              <button
+                type="button"
+                onClick={() => setIsLogin(!isLogin)}
+                className="w-full text-sm text-primary hover:underline"
+              >
+                {isLogin ? "Need an account? Sign up" : "Already have an account? Sign in"}
+              </button>
+            )}
           </div>
         </div>
       </div>
