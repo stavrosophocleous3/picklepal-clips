@@ -10,9 +10,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+
+const DAYS_OF_WEEK = [
+  { value: "monday", label: "Monday" },
+  { value: "tuesday", label: "Tuesday" },
+  { value: "wednesday", label: "Wednesday" },
+  { value: "thursday", label: "Thursday" },
+  { value: "friday", label: "Friday" },
+  { value: "saturday", label: "Saturday" },
+  { value: "sunday", label: "Sunday" },
+];
 
 interface CreateGroupDialogProps {
   open: boolean;
@@ -27,8 +38,32 @@ export const CreateGroupDialog = ({
 }: CreateGroupDialogProps) => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [selectedDays, setSelectedDays] = useState<string[]>([]);
+  const [isAnyDay, setIsAnyDay] = useState(true);
+  const [time, setTime] = useState("");
+  const [isAnyTime, setIsAnyTime] = useState(true);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+
+  const handleDayToggle = (day: string) => {
+    setSelectedDays((prev) =>
+      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
+    );
+  };
+
+  const handleAnyDayToggle = (checked: boolean) => {
+    setIsAnyDay(checked);
+    if (checked) {
+      setSelectedDays([]);
+    }
+  };
+
+  const handleAnyTimeToggle = (checked: boolean) => {
+    setIsAnyTime(checked);
+    if (checked) {
+      setTime("");
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,6 +72,24 @@ export const CreateGroupDialog = ({
       toast({
         title: "Name required",
         description: "Please enter a group name",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!isAnyDay && selectedDays.length === 0) {
+      toast({
+        title: "Day selection required",
+        description: "Please select at least one day or choose 'Any Day'",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!isAnyTime && !time) {
+      toast({
+        title: "Time required",
+        description: "Please enter a time or choose 'Any Time'",
         variant: "destructive",
       });
       return;
@@ -54,6 +107,8 @@ export const CreateGroupDialog = ({
           name: name.trim(),
           description: description.trim() || null,
           created_by: user.id,
+          preferred_days: isAnyDay ? ["any"] : selectedDays,
+          preferred_time: isAnyTime ? "any" : time,
         })
         .select()
         .single();
@@ -78,6 +133,10 @@ export const CreateGroupDialog = ({
 
       setName("");
       setDescription("");
+      setSelectedDays([]);
+      setIsAnyDay(true);
+      setTime("");
+      setIsAnyTime(true);
       onGroupCreated();
     } catch (error: any) {
       toast({
@@ -121,6 +180,68 @@ export const CreateGroupDialog = ({
               rows={3}
             />
           </div>
+
+          <div className="space-y-3">
+            <Label>Preferred Days</Label>
+            <div className="flex items-center space-x-2 mb-2">
+              <Checkbox
+                id="any-day"
+                checked={isAnyDay}
+                onCheckedChange={handleAnyDayToggle}
+              />
+              <label
+                htmlFor="any-day"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Any Day
+              </label>
+            </div>
+            {!isAnyDay && (
+              <div className="grid grid-cols-2 gap-2">
+                {DAYS_OF_WEEK.map((day) => (
+                  <div key={day.value} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={day.value}
+                      checked={selectedDays.includes(day.value)}
+                      onCheckedChange={() => handleDayToggle(day.value)}
+                    />
+                    <label
+                      htmlFor={day.value}
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      {day.label}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-3">
+            <Label>Preferred Time</Label>
+            <div className="flex items-center space-x-2 mb-2">
+              <Checkbox
+                id="any-time"
+                checked={isAnyTime}
+                onCheckedChange={handleAnyTimeToggle}
+              />
+              <label
+                htmlFor="any-time"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Any Time
+              </label>
+            </div>
+            {!isAnyTime && (
+              <Input
+                type="time"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                placeholder="Select time"
+              />
+            )}
+          </div>
+
           <div className="flex gap-2 justify-end">
             <Button
               type="button"
