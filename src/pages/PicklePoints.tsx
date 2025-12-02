@@ -1,8 +1,46 @@
 import { Card } from "@/components/ui/card";
 import { MobileNav } from "@/components/MobileNav";
-import { Medal } from "lucide-react";
+import { Medal, Gift, Coffee, GraduationCap, ShoppingBag } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const PicklePoints = () => {
+  const userPoints = 45; // This would come from user data in real implementation
+
+  const rewards = [
+    {
+      id: 1,
+      title: "$5 Off Social",
+      description: "Get $5 off your next social event",
+      points: 5,
+      icon: Gift,
+      color: "text-green-500"
+    },
+    {
+      id: 2,
+      title: "$5 Off Tap House",
+      description: "Enjoy $5 off at the tap house",
+      points: 10,
+      icon: Coffee,
+      color: "text-amber-500"
+    },
+    {
+      id: 3,
+      title: "$10 Off Lesson",
+      description: "Save $10 on your next lesson",
+      points: 15,
+      icon: GraduationCap,
+      color: "text-blue-500"
+    },
+    {
+      id: 4,
+      title: "$10 Off Equipment",
+      description: "Get $10 off pickleball equipment",
+      points: 20,
+      icon: ShoppingBag,
+      color: "text-purple-500"
+    }
+  ];
+
   return (
     <div className="min-h-screen bg-background pb-20">
       <div className="container mx-auto px-4 py-6">
@@ -10,13 +48,55 @@ const PicklePoints = () => {
           <Medal className="w-8 h-8 text-primary" />
           <div>
             <h1 className="text-2xl font-bold">Pickle Points</h1>
-            <p className="text-sm text-muted-foreground">Track your achievements</p>
+            <p className="text-sm text-muted-foreground">Earn points, unlock rewards</p>
           </div>
         </div>
 
-        <Card className="p-6">
-          <p className="text-muted-foreground">Your points and rewards will appear here.</p>
+        {/* Points Balance */}
+        <Card className="p-6 mb-6 bg-gradient-to-br from-primary/10 to-primary/5">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground mb-1">Your Balance</p>
+              <p className="text-4xl font-bold text-primary">{userPoints} Points</p>
+            </div>
+            <Medal className="w-16 h-16 text-primary opacity-20" />
+          </div>
         </Card>
+
+        {/* Rewards Section */}
+        <div className="mb-4">
+          <h2 className="text-xl font-semibold mb-4">Available Rewards</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {rewards.map((reward) => {
+              const Icon = reward.icon;
+              const canRedeem = userPoints >= reward.points;
+              
+              return (
+                <Card key={reward.id} className={`p-6 ${!canRedeem ? 'opacity-60' : ''}`}>
+                  <div className="flex items-start gap-4">
+                    <div className={`p-3 rounded-lg bg-muted ${reward.color}`}>
+                      <Icon className="w-6 h-6" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-lg mb-1">{reward.title}</h3>
+                      <p className="text-sm text-muted-foreground mb-3">{reward.description}</p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-bold text-primary">{reward.points} Points</span>
+                        <Button 
+                          size="sm" 
+                          disabled={!canRedeem}
+                          className="ml-auto"
+                        >
+                          {canRedeem ? 'Redeem' : 'Locked'}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
       </div>
       <MobileNav />
     </div>
