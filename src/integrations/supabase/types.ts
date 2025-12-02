@@ -150,6 +150,7 @@ export type Database = {
           created_at: string
           group_id: string
           id: string
+          max_players: number | null
           user_id: string
         }
         Insert: {
@@ -157,6 +158,7 @@ export type Database = {
           created_at?: string
           group_id: string
           id?: string
+          max_players?: number | null
           user_id: string
         }
         Update: {
@@ -164,6 +166,7 @@ export type Database = {
           created_at?: string
           group_id?: string
           id?: string
+          max_players?: number | null
           user_id?: string
         }
         Relationships: [

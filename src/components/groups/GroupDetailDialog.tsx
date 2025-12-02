@@ -25,12 +25,14 @@ import { Users, Send, UserPlus, Loader2, LogOut, MessageCircle, Calendar, Check,
 import { InviteMembersDialog } from "./InviteMembersDialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Message {
   id: string;
   content: string;
   created_at: string;
   user_id: string;
+  max_players?: number | null;
   profiles?: {
     username: string;
     avatar_url: string | null;
@@ -89,6 +91,7 @@ export const GroupDetailDialog = ({
   const [gameDetails, setGameDetails] = useState("");
   const [gameDate, setGameDate] = useState("");
   const [gameTime, setGameTime] = useState("");
+  const [maxPlayers, setMaxPlayers] = useState<string>("8");
   const [postingGame, setPostingGame] = useState(false);
   const [rsvpingMessageId, setRsvpingMessageId] = useState<string | null>(null);
   const { toast } = useToast();
@@ -343,6 +346,7 @@ export const GroupDetailDialog = ({
         group_id: groupId,
         user_id: user.id,
         content: gameMessage,
+        max_players: parseInt(maxPlayers),
       });
 
       if (error) throw error;
@@ -355,6 +359,7 @@ export const GroupDetailDialog = ({
       setGameDetails("");
       setGameDate("");
       setGameTime("");
+      setMaxPlayers("8");
     } catch (error: any) {
       toast({
         title: "Error posting game",
@@ -366,7 +371,7 @@ export const GroupDetailDialog = ({
     }
   };
 
-  const handleRsvp = async (messageId: string, status: 'going' | 'not_going') => {
+  const handleRsvp = async (messageId: string, status: 'going' | 'not_going', maxPlayers?: number | null) => {
     if (!currentUserId) return;
     
     setRsvpingMessageId(messageId);
@@ -443,21 +448,40 @@ export const GroupDetailDialog = ({
           .eq("id", currentUserId)
           .single();
 
-        // Update local state
+        // Update local state and check capacity
+        let newGoingCount = 0;
         setMessages(prev => prev.map(msg => {
           if (msg.id === messageId) {
+            const updatedRsvps = [...(msg.rsvps || []), {
+              id: newRsvp.id,
+              user_id: currentUserId,
+              status: status as 'going' | 'not_going',
+              profiles: profile || null,
+            }];
+            
+            if (status === 'going') {
+              newGoingCount = updatedRsvps.filter(r => r.status === 'going').length;
+            }
+            
             return {
               ...msg,
-              rsvps: [...(msg.rsvps || []), {
-                id: newRsvp.id,
-                user_id: currentUserId,
-                status: status as 'going' | 'not_going',
-                profiles: profile || null,
-              }],
+              rsvps: updatedRsvps,
             };
           }
           return msg;
         }));
+
+        // Check if capacity is reached and auto-post message
+        if (status === 'going' && maxPlayers && newGoingCount === maxPlayers) {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            await supabase.from("group_messages").insert({
+              group_id: groupId,
+              user_id: user.id,
+              content: "🎉 You guys have enough players! See you there! 🎾",
+            });
+          }
+        }
       }
     } catch (error: any) {
       toast({
@@ -557,6 +581,8 @@ export const GroupDetailDialog = ({
                       const userRsvp = message.rsvps?.find(r => r.user_id === currentUserId);
                       const goingCount = message.rsvps?.filter(r => r.status === 'going').length || 0;
                       const notGoingCount = message.rsvps?.filter(r => r.status === 'not_going').length || 0;
+                      const maxPlayers = message.max_players;
+                      const capacityReached = maxPlayers ? goingCount >= maxPlayers : false;
 
                       return (
                         <div
@@ -579,12 +605,22 @@ export const GroupDetailDialog = ({
                             
                             {isGame && (
                               <div className="mt-3 pt-3 border-t border-primary/20 space-y-2">
+                                {maxPlayers && (
+                                  <div className={`text-xs font-semibold text-center pb-2 ${
+                                    capacityReached 
+                                      ? isCurrentUser ? 'text-primary-foreground' : 'text-primary' 
+                                      : isCurrentUser ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                                  }`}>
+                                    Players: {goingCount}/{maxPlayers}
+                                    {capacityReached && ' 🎉'}
+                                  </div>
+                                )}
                                 <div className="flex gap-2">
                                   <Button
                                     size="sm"
                                     variant={userRsvp?.status === 'going' ? 'default' : 'outline'}
-                                    onClick={() => handleRsvp(message.id, 'going')}
-                                    disabled={rsvpingMessageId === message.id}
+                                    onClick={() => handleRsvp(message.id, 'going', maxPlayers)}
+                                    disabled={rsvpingMessageId === message.id || (capacityReached && !userRsvp)}
                                     className={`flex-1 gap-1 ${
                                       isCurrentUser 
                                         ? 'bg-primary-foreground text-primary hover:bg-primary-foreground/90' 
@@ -597,7 +633,7 @@ export const GroupDetailDialog = ({
                                   <Button
                                     size="sm"
                                     variant={userRsvp?.status === 'not_going' ? 'default' : 'outline'}
-                                    onClick={() => handleRsvp(message.id, 'not_going')}
+                                    onClick={() => handleRsvp(message.id, 'not_going', maxPlayers)}
                                     disabled={rsvpingMessageId === message.id}
                                     className={`flex-1 gap-1 ${
                                       isCurrentUser 
@@ -769,6 +805,24 @@ export const GroupDetailDialog = ({
                         value={gameTime}
                         onChange={(e) => setGameTime(e.target.value)}
                       />
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">
+                        Max Players
+                      </label>
+                      <Select value={maxPlayers} onValueChange={setMaxPlayers}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select max players" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="4">4 players</SelectItem>
+                          <SelectItem value="8">8 players</SelectItem>
+                          <SelectItem value="12">12 players</SelectItem>
+                          <SelectItem value="16">16 players</SelectItem>
+                          <SelectItem value="20">20 players</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
 
                     <Button
