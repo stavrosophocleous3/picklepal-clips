@@ -43,22 +43,23 @@ const GameTime = () => {
           {/* Open Play Section */}
           <div>
             <h2 className="text-xl font-semibold mb-3">Open Play</h2>
-            <div className="space-y-3">
-              <Card className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <h3 className="font-medium">Tuesday</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <Card className="p-4 border-2">
+                <div className="space-y-3">
+                  <div>
+                    <h3 className="font-semibold text-lg">Tuesday</h3>
                     <p className="text-sm text-muted-foreground">6:00 PM - 9:00 PM</p>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1 text-muted-foreground">
-                      <Users className="w-4 h-4" />
-                      <span className="text-sm font-medium">{attendance.tuesdayOpen}</span>
+                  <div className="flex items-center justify-between pt-2 border-t">
+                    <div className="flex items-center gap-1">
+                      <Users className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-lg font-semibold">{attendance.tuesdayOpen}</span>
                     </div>
                     <Button
                       variant={userGoing.tuesdayOpen ? "default" : "outline"}
                       size="sm"
                       onClick={() => handleAttendance("tuesdayOpen")}
+                      className="w-20"
                     >
                       I'm Going
                     </Button>
@@ -66,21 +67,22 @@ const GameTime = () => {
                 </div>
               </Card>
 
-              <Card className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <h3 className="font-medium">Thursday</h3>
+              <Card className="p-4 border-2">
+                <div className="space-y-3">
+                  <div>
+                    <h3 className="font-semibold text-lg">Thursday</h3>
                     <p className="text-sm text-muted-foreground">6:00 PM - 9:00 PM</p>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1 text-muted-foreground">
-                      <Users className="w-4 h-4" />
-                      <span className="text-sm font-medium">{attendance.thursdayOpen}</span>
+                  <div className="flex items-center justify-between pt-2 border-t">
+                    <div className="flex items-center gap-1">
+                      <Users className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-lg font-semibold">{attendance.thursdayOpen}</span>
                     </div>
                     <Button
                       variant={userGoing.thursdayOpen ? "default" : "outline"}
                       size="sm"
                       onClick={() => handleAttendance("thursdayOpen")}
+                      className="w-20"
                     >
                       I'm Going
                     </Button>
@@ -93,22 +95,23 @@ const GameTime = () => {
           {/* Challenge Courts Section */}
           <div>
             <h2 className="text-xl font-semibold mb-3">Challenge Courts</h2>
-            <div className="space-y-3">
-              <Card className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <h3 className="font-medium">Monday</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <Card className="p-4 border-2">
+                <div className="space-y-3">
+                  <div>
+                    <h3 className="font-semibold text-lg">Monday</h3>
                     <p className="text-sm text-muted-foreground">6:00 PM - 9:00 PM</p>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1 text-muted-foreground">
-                      <Users className="w-4 h-4" />
-                      <span className="text-sm font-medium">{attendance.mondayChallenge}</span>
+                  <div className="flex items-center justify-between pt-2 border-t">
+                    <div className="flex items-center gap-1">
+                      <Users className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-lg font-semibold">{attendance.mondayChallenge}</span>
                     </div>
                     <Button
                       variant={userGoing.mondayChallenge ? "default" : "outline"}
                       size="sm"
                       onClick={() => handleAttendance("mondayChallenge")}
+                      className="w-20"
                     >
                       I'm Going
                     </Button>
@@ -116,21 +119,22 @@ const GameTime = () => {
                 </div>
               </Card>
 
-              <Card className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <h3 className="font-medium">Wednesday</h3>
+              <Card className="p-4 border-2">
+                <div className="space-y-3">
+                  <div>
+                    <h3 className="font-semibold text-lg">Wednesday</h3>
                     <p className="text-sm text-muted-foreground">6:00 PM - 9:00 PM</p>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1 text-muted-foreground">
-                      <Users className="w-4 h-4" />
-                      <span className="text-sm font-medium">{attendance.wednesdayChallenge}</span>
+                  <div className="flex items-center justify-between pt-2 border-t">
+                    <div className="flex items-center gap-1">
+                      <Users className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-lg font-semibold">{attendance.wednesdayChallenge}</span>
                     </div>
                     <Button
                       variant={userGoing.wednesdayChallenge ? "default" : "outline"}
                       size="sm"
                       onClick={() => handleAttendance("wednesdayChallenge")}
+                      className="w-20"
                     >
                       I'm Going
                     </Button>
