@@ -207,12 +207,12 @@ const Courts = () => {
         </div>
 
         {/* Weekly Calendar Overview */}
-        <Card className="p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-            <CalendarIcon className="w-5 h-5 text-primary" />
+        <Card className="p-4 mb-6">
+          <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+            <CalendarIcon className="w-4 h-4 text-primary" />
             Weekly Overview
           </h2>
-          <div className="grid grid-cols-7 gap-2">
+          <div className="grid grid-cols-7 gap-1.5">
             {(() => {
               const today = new Date();
               today.setHours(0, 0, 0, 0);
@@ -224,12 +224,13 @@ const Courts = () => {
                 const dayName = format(date, 'EEE');
                 const dayNumber = format(date, 'd');
                 const monthName = format(date, 'MMM');
+                const isSaturday = dayName === 'Sat';
                 
                 days.push(
                   <div
                     key={i}
                     className={cn(
-                      "flex flex-col items-center justify-center p-4 rounded-lg border cursor-pointer transition-all hover:border-primary",
+                      "flex flex-col items-center p-2 rounded-lg border cursor-pointer transition-all hover:border-primary",
                       selectedDate && format(selectedDate, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd')
                         ? "bg-primary text-primary-foreground border-primary"
                         : "bg-card"
@@ -240,9 +241,16 @@ const Courts = () => {
                       setTimeSlotDialogOpen(true);
                     }}
                   >
-                    <span className="text-xs font-medium mb-1">{dayName}</span>
-                    <span className="text-2xl font-bold">{dayNumber}</span>
-                    <span className="text-xs mt-1">{monthName}</span>
+                    <span className="text-[10px] font-medium mb-0.5">{dayName}</span>
+                    <span className="text-lg font-bold">{dayNumber}</span>
+                    <span className="text-[10px] mb-1">{monthName}</span>
+                    {isSaturday && (
+                      <div className="mt-1 pt-1 border-t border-border/40 w-full">
+                        <p className="text-[9px] font-semibold text-center">2.5-3.0</p>
+                        <p className="text-[8px] text-center leading-tight">Anthony Tennis Clinic</p>
+                        <p className="text-[9px] font-medium text-center mt-0.5">7:30-8</p>
+                      </div>
+                    )}
                   </div>
                 );
               }
