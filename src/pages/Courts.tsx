@@ -206,6 +206,28 @@ const Courts = () => {
           )}
         </div>
 
+        {/* Monthly Calendar Overview */}
+        <Card className="p-6 mb-6">
+          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+            <CalendarIcon className="w-5 h-5 text-primary" />
+            Monthly Overview
+          </h2>
+          <div className="flex justify-center">
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              className={cn("pointer-events-auto")}
+              disabled={(date) => {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const maxDate = new Date(today);
+                maxDate.setDate(maxDate.getDate() + 7);
+                return date < today || date > maxDate;
+              }}
+            />
+          </div>
+        </Card>
+
         {!showCourts ? (
           <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
             <div className="text-center space-y-2">
