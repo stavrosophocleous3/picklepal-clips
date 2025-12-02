@@ -90,7 +90,9 @@ export const GroupDetailDialog = ({
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [gameDetails, setGameDetails] = useState("");
   const [gameDate, setGameDate] = useState("");
-  const [gameTime, setGameTime] = useState("");
+  const [gameHour, setGameHour] = useState<string>("12");
+  const [gameMinute, setGameMinute] = useState<string>("00");
+  const [gamePeriod, setGamePeriod] = useState<string>("PM");
   const [maxPlayers, setMaxPlayers] = useState<string>("8");
   const [postingGame, setPostingGame] = useState(false);
   const [rsvpingMessageId, setRsvpingMessageId] = useState<string | null>(null);
@@ -333,14 +335,15 @@ export const GroupDetailDialog = ({
 
   const handlePostGame = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!gameDetails.trim() || !gameDate || !gameTime || postingGame) return;
+    if (!gameDetails.trim() || !gameDate || !gameHour || !gameMinute || postingGame) return;
 
     setPostingGame(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const gameMessage = `🎾 Game Posted!\n\n${gameDetails}\n📅 ${new Date(gameDate).toLocaleDateString()}\n🕐 ${gameTime}`;
+      const formattedTime = `${gameHour}:${gameMinute} ${gamePeriod}`;
+      const gameMessage = `🎾 Game Posted!\n\n${gameDetails}\n📅 ${new Date(gameDate).toLocaleDateString()}\n🕐 ${formattedTime}`;
 
       const { error } = await supabase.from("group_messages").insert({
         group_id: groupId,
@@ -358,7 +361,9 @@ export const GroupDetailDialog = ({
 
       setGameDetails("");
       setGameDate("");
-      setGameTime("");
+      setGameHour("12");
+      setGameMinute("00");
+      setGamePeriod("PM");
       setMaxPlayers("8");
     } catch (error: any) {
       toast({
@@ -800,11 +805,41 @@ export const GroupDetailDialog = ({
                       <label className="text-sm font-medium mb-2 block">
                         Time
                       </label>
-                      <Input
-                        type="time"
-                        value={gameTime}
-                        onChange={(e) => setGameTime(e.target.value)}
-                      />
+                      <div className="flex gap-2">
+                        <Select value={gameHour} onValueChange={setGameHour}>
+                          <SelectTrigger className="flex-1">
+                            <SelectValue placeholder="Hour" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Array.from({ length: 12 }, (_, i) => i + 1).map((hour) => (
+                              <SelectItem key={hour} value={hour.toString()}>
+                                {hour}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Select value={gameMinute} onValueChange={setGameMinute}>
+                          <SelectTrigger className="flex-1">
+                            <SelectValue placeholder="Min" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {["00", "15", "30", "45"].map((minute) => (
+                              <SelectItem key={minute} value={minute}>
+                                {minute}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Select value={gamePeriod} onValueChange={setGamePeriod}>
+                          <SelectTrigger className="w-20">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="AM">AM</SelectItem>
+                            <SelectItem value="PM">PM</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
 
                     <div>
@@ -828,7 +863,7 @@ export const GroupDetailDialog = ({
                     <Button
                       type="submit"
                       className="w-full"
-                      disabled={postingGame || !gameDetails.trim() || !gameDate || !gameTime}
+                      disabled={postingGame || !gameDetails.trim() || !gameDate}
                     >
                       {postingGame ? (
                         <>
