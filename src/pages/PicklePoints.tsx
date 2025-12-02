@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { MobileNav } from "@/components/MobileNav";
-import { Medal, Clock } from "lucide-react";
+import { Medal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import socialReward from "@/assets/rewards/social-reward.png";
 import taphouseReward from "@/assets/rewards/taphouse-reward.png";
@@ -99,17 +99,6 @@ const PicklePoints = () => {
               );
             })}
           </div>
-        </div>
-
-        {/* Game Time Section */}
-        <div className="mb-4">
-          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-            <Clock className="w-5 h-5 text-primary" />
-            Game Time
-          </h2>
-          <Card className="p-6">
-            <p className="text-muted-foreground text-center">Your upcoming games will appear here</p>
-          </Card>
         </div>
       </div>
       <MobileNav />
