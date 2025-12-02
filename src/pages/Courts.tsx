@@ -206,25 +206,49 @@ const Courts = () => {
           )}
         </div>
 
-        {/* Monthly Calendar Overview */}
+        {/* Weekly Calendar Overview */}
         <Card className="p-6 mb-6">
           <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
             <CalendarIcon className="w-5 h-5 text-primary" />
-            Monthly Overview
+            Weekly Overview
           </h2>
-          <div className="flex justify-center">
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              className={cn("pointer-events-auto")}
-              disabled={(date) => {
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                const maxDate = new Date(today);
-                maxDate.setDate(maxDate.getDate() + 7);
-                return date < today || date > maxDate;
-              }}
-            />
+          <div className="grid grid-cols-7 gap-2">
+            {(() => {
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+              const days = [];
+              
+              for (let i = 0; i < 7; i++) {
+                const date = new Date(today);
+                date.setDate(date.getDate() + i);
+                const dayName = format(date, 'EEE');
+                const dayNumber = format(date, 'd');
+                const monthName = format(date, 'MMM');
+                
+                days.push(
+                  <div
+                    key={i}
+                    className={cn(
+                      "flex flex-col items-center justify-center p-4 rounded-lg border cursor-pointer transition-all hover:border-primary",
+                      selectedDate && format(selectedDate, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd')
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-card"
+                    )}
+                    onClick={() => {
+                      setSelectedDate(date);
+                      setDateDialogOpen(false);
+                      setTimeSlotDialogOpen(true);
+                    }}
+                  >
+                    <span className="text-xs font-medium mb-1">{dayName}</span>
+                    <span className="text-2xl font-bold">{dayNumber}</span>
+                    <span className="text-xs mt-1">{monthName}</span>
+                  </div>
+                );
+              }
+              
+              return days;
+            })()}
           </div>
         </Card>
 
