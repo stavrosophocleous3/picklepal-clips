@@ -41,6 +41,13 @@ const PicklePoints = () => {
     },
     {
       id: 5,
+      title: "25% Off Affiliated Brands",
+      description: "Selkirk, Dunlop, Wilson, Franklin",
+      points: 100,
+      image: equipmentReward,
+    },
+    {
+      id: 6,
       title: "Date with Traci",
       description: "One exclusive date with Traci",
       points: 1000000,
