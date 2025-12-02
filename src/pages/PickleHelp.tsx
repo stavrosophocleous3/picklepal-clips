@@ -1,64 +1,150 @@
-import { HelpCircle, MessageCircle, BookOpen, Mail } from "lucide-react";
+import { useState, useEffect } from "react";
 import { MobileNav } from "@/components/MobileNav";
+import { Button } from "@/components/ui/button";
+import { Plus, Users, MessageCircle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { CreateGroupDialog } from "@/components/groups/CreateGroupDialog";
+import { GroupDetailDialog } from "@/components/groups/GroupDetailDialog";
+
+interface Group {
+  id: string;
+  name: string;
+  description: string | null;
+  created_by: string;
+  created_at: string;
+  member_count?: number;
+}
 
 const PickleHelp = () => {
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+
+  const fetchGroups = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("groups")
+        .select(`
+          *,
+          group_members(count)
+        `)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      const groupsWithCount = data?.map((group: any) => ({
+        ...group,
+        member_count: group.group_members[0]?.count || 0,
+      }));
+
+      setGroups(groupsWithCount || []);
+    } catch (error: any) {
+      toast({
+        title: "Error loading groups",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchGroups();
+  }, []);
+
+  const handleGroupCreated = () => {
+    fetchGroups();
+    setCreateDialogOpen(false);
+  };
+
   return (
     <div className="min-h-screen bg-background pb-20">
       <div className="max-w-lg mx-auto">
         {/* Header */}
-        <div className="relative bg-gradient-to-br from-primary/20 via-primary/10 to-background p-8 text-center border-b border-border">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/20 mb-4 animate-bounce">
-            <HelpCircle className="w-8 h-8 text-primary" />
+        <div className="sticky top-0 bg-background border-b border-border p-4 z-10">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold">My Groups</h1>
+              <p className="text-sm text-muted-foreground">
+                Private groups with chat
+              </p>
+            </div>
+            <Button
+              onClick={() => setCreateDialogOpen(true)}
+              className="gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Create
+            </Button>
           </div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Pickle Lab</h1>
-          <p className="text-muted-foreground">Experiment and explore!</p>
         </div>
 
-        {/* Help Categories */}
-        <div className="p-6 space-y-4">
-          <div className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition-colors cursor-pointer">
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <BookOpen className="w-6 h-6 text-primary" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-foreground mb-2">Getting Started</h3>
-                <p className="text-sm text-muted-foreground">
-                  Learn how to upload videos, follow creators, and engage with the PickleTok community.
-                </p>
-              </div>
+        {/* Groups List */}
+        <div className="p-4 space-y-3">
+          {loading ? (
+            <div className="text-center py-8 text-muted-foreground">
+              Loading groups...
             </div>
-          </div>
-
-          <div className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition-colors cursor-pointer">
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <MessageCircle className="w-6 h-6 text-primary" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-foreground mb-2">FAQs</h3>
-                <p className="text-sm text-muted-foreground">
-                  Find answers to common questions about trending, achievements, and video features.
-                </p>
-              </div>
+          ) : groups.length === 0 ? (
+            <div className="text-center py-12">
+              <Users className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
+              <p className="text-muted-foreground mb-4">
+                You haven't joined any groups yet
+              </p>
+              <Button onClick={() => setCreateDialogOpen(true)} className="gap-2">
+                <Plus className="w-4 h-4" />
+                Create Your First Group
+              </Button>
             </div>
-          </div>
-
-          <div className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition-colors cursor-pointer">
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <Mail className="w-6 h-6 text-primary" />
+          ) : (
+            groups.map((group) => (
+              <div
+                key={group.id}
+                onClick={() => setSelectedGroup(group.id)}
+                className="bg-card border border-border rounded-xl p-4 hover:border-primary/50 transition-colors cursor-pointer"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-foreground mb-1">
+                      {group.name}
+                    </h3>
+                    {group.description && (
+                      <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
+                        {group.description}
+                      </p>
+                    )}
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Users className="w-3 h-3" />
+                        {group.member_count} members
+                      </span>
+                    </div>
+                  </div>
+                  <MessageCircle className="w-5 h-5 text-primary" />
+                </div>
               </div>
-              <div>
-                <h3 className="font-semibold text-foreground mb-2">Contact Support</h3>
-                <p className="text-sm text-muted-foreground">
-                  Can't find what you're looking for? Reach out to our support team.
-                </p>
-              </div>
-            </div>
-          </div>
+            ))
+          )}
         </div>
       </div>
+
+      <CreateGroupDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        onGroupCreated={handleGroupCreated}
+      />
+
+      {selectedGroup && (
+        <GroupDetailDialog
+          groupId={selectedGroup}
+          open={!!selectedGroup}
+          onOpenChange={(open) => !open && setSelectedGroup(null)}
+        />
+      )}
 
       <MobileNav />
     </div>
