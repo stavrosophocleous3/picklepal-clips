@@ -38,6 +38,13 @@ const PicklePoints = () => {
       description: "Get $10 off pickleball equipment",
       points: 20,
       image: equipmentReward,
+    },
+    {
+      id: 5,
+      title: "Date with Traci",
+      description: "One exclusive date with Traci",
+      points: 1000000,
+      image: socialReward,
     }
   ];
 
