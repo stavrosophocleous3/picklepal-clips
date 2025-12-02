@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
@@ -39,9 +40,9 @@ export const CreateGroupDialog = ({
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
-  const [isAnyDay, setIsAnyDay] = useState(true);
+  const [dayPreference, setDayPreference] = useState<"any" | "custom">("any");
   const [time, setTime] = useState("");
-  const [isAnyTime, setIsAnyTime] = useState(true);
+  const [timePreference, setTimePreference] = useState<"any" | "custom">("any");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -49,20 +50,6 @@ export const CreateGroupDialog = ({
     setSelectedDays((prev) =>
       prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
     );
-  };
-
-  const handleAnyDayToggle = (checked: boolean) => {
-    setIsAnyDay(checked);
-    if (checked) {
-      setSelectedDays([]);
-    }
-  };
-
-  const handleAnyTimeToggle = (checked: boolean) => {
-    setIsAnyTime(checked);
-    if (checked) {
-      setTime("");
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -77,19 +64,19 @@ export const CreateGroupDialog = ({
       return;
     }
 
-    if (!isAnyDay && selectedDays.length === 0) {
+    if (dayPreference === "custom" && selectedDays.length === 0) {
       toast({
         title: "Day selection required",
-        description: "Please select at least one day or choose 'Any Day'",
+        description: "Please select at least one day",
         variant: "destructive",
       });
       return;
     }
 
-    if (!isAnyTime && !time) {
+    if (timePreference === "custom" && !time) {
       toast({
         title: "Time required",
-        description: "Please enter a time or choose 'Any Time'",
+        description: "Please enter a time",
         variant: "destructive",
       });
       return;
@@ -107,8 +94,8 @@ export const CreateGroupDialog = ({
           name: name.trim(),
           description: description.trim() || null,
           created_by: user.id,
-          preferred_days: isAnyDay ? ["any"] : selectedDays,
-          preferred_time: isAnyTime ? "any" : time,
+          preferred_days: dayPreference === "any" ? ["any"] : selectedDays,
+          preferred_time: timePreference === "any" ? "any" : time,
         })
         .select()
         .single();
@@ -134,9 +121,9 @@ export const CreateGroupDialog = ({
       setName("");
       setDescription("");
       setSelectedDays([]);
-      setIsAnyDay(true);
+      setDayPreference("any");
       setTime("");
-      setIsAnyTime(true);
+      setTimePreference("any");
       onGroupCreated();
     } catch (error: any) {
       toast({
@@ -183,21 +170,28 @@ export const CreateGroupDialog = ({
 
           <div className="space-y-3">
             <Label>Preferred Days</Label>
-            <div className="flex items-center space-x-2 mb-2">
-              <Checkbox
-                id="any-day"
-                checked={isAnyDay}
-                onCheckedChange={handleAnyDayToggle}
-              />
-              <label
-                htmlFor="any-day"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Any Day
-              </label>
-            </div>
-            {!isAnyDay && (
-              <div className="grid grid-cols-2 gap-2">
+            <RadioGroup value={dayPreference} onValueChange={(v) => setDayPreference(v as "any" | "custom")}>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="any" id="day-any" />
+                <label
+                  htmlFor="day-any"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Any Day
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="custom" id="day-custom" />
+                <label
+                  htmlFor="day-custom"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Custom Days
+                </label>
+              </div>
+            </RadioGroup>
+            {dayPreference === "custom" && (
+              <div className="grid grid-cols-2 gap-2 mt-2">
                 {DAYS_OF_WEEK.map((day) => (
                   <div key={day.value} className="flex items-center space-x-2">
                     <Checkbox
@@ -219,25 +213,33 @@ export const CreateGroupDialog = ({
 
           <div className="space-y-3">
             <Label>Preferred Time</Label>
-            <div className="flex items-center space-x-2 mb-2">
-              <Checkbox
-                id="any-time"
-                checked={isAnyTime}
-                onCheckedChange={handleAnyTimeToggle}
-              />
-              <label
-                htmlFor="any-time"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Any Time
-              </label>
-            </div>
-            {!isAnyTime && (
+            <RadioGroup value={timePreference} onValueChange={(v) => setTimePreference(v as "any" | "custom")}>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="any" id="time-any" />
+                <label
+                  htmlFor="time-any"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Any Time
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="custom" id="time-custom" />
+                <label
+                  htmlFor="time-custom"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Custom Time
+                </label>
+              </div>
+            </RadioGroup>
+            {timePreference === "custom" && (
               <Input
                 type="time"
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
                 placeholder="Select time"
+                className="mt-2"
               />
             )}
           </div>
