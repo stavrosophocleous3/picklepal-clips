@@ -21,7 +21,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Send, UserPlus, Loader2, LogOut, MessageCircle, Calendar, Check, X } from "lucide-react";
+import { Users, Send, UserPlus, Loader2, LogOut, MessageCircle, Calendar, Check, X, Trash2 } from "lucide-react";
 import { InviteMembersDialog } from "./InviteMembersDialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -96,6 +96,7 @@ export const GroupDetailDialog = ({
   const [maxPlayers, setMaxPlayers] = useState<string>("8");
   const [postingGame, setPostingGame] = useState(false);
   const [rsvpingMessageId, setRsvpingMessageId] = useState<string | null>(null);
+  const [deletingMessageId, setDeletingMessageId] = useState<string | null>(null);
   const { toast } = useToast();
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -376,6 +377,37 @@ export const GroupDetailDialog = ({
     }
   };
 
+  const handleDeleteMessage = async (messageId: string) => {
+    if (!currentUserId) return;
+    
+    setDeletingMessageId(messageId);
+    try {
+      const { error } = await supabase
+        .from("group_messages")
+        .delete()
+        .eq("id", messageId)
+        .eq("user_id", currentUserId);
+
+      if (error) throw error;
+
+      // Update local state
+      setMessages(prev => prev.filter(msg => msg.id !== messageId));
+
+      toast({
+        title: "Game deleted",
+        description: "The game post has been removed",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error deleting message",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setDeletingMessageId(null);
+    }
+  };
+
   const handleRsvp = async (messageId: string, status: 'going' | 'not_going', maxPlayers?: number | null) => {
     if (!currentUserId) return;
     
@@ -606,7 +638,24 @@ export const GroupDetailDialog = ({
                                 {message.profiles?.username || "Unknown"}
                               </p>
                             )}
-                            <p className="text-sm break-words whitespace-pre-wrap">{message.content}</p>
+                            <div className="flex items-start justify-between gap-2">
+                              <p className="text-sm break-words whitespace-pre-wrap flex-1">{message.content}</p>
+                              {isGame && isCurrentUser && (
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  onClick={() => handleDeleteMessage(message.id)}
+                                  disabled={deletingMessageId === message.id}
+                                  className="h-6 w-6 shrink-0 hover:bg-primary-foreground/20"
+                                >
+                                  {deletingMessageId === message.id ? (
+                                    <Loader2 className="w-3 h-3 animate-spin" />
+                                  ) : (
+                                    <Trash2 className="w-3 h-3" />
+                                  )}
+                                </Button>
+                              )}
+                            </div>
                             
                             {isGame && (
                               <div className="mt-3 pt-3 border-t border-primary/20 space-y-2">
