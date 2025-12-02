@@ -48,6 +48,13 @@ const PicklePoints = () => {
     },
     {
       id: 6,
+      title: "2 Day Guest Pass",
+      description: "Bring a friend for 2 days",
+      points: 200,
+      image: socialReward,
+    },
+    {
+      id: 7,
       title: "Date with Traci",
       description: "One exclusive date with Traci",
       points: 1000000,
