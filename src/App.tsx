@@ -16,6 +16,7 @@ import GroupInvite from "./pages/GroupInvite";
 import PicklePoints from "./pages/PicklePoints";
 import Courts from "./pages/Courts";
 import GameTime from "./pages/GameTime";
+import Billing from "./pages/Billing";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +41,7 @@ const App = () => (
           <Route path="/pickle-points" element={<PicklePoints />} />
           <Route path="/courts" element={<Courts />} />
           <Route path="/game-time" element={<GameTime />} />
+          <Route path="/billing" element={<Billing />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
