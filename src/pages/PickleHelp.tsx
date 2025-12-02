@@ -15,6 +15,8 @@ interface Group {
   created_by: string;
   created_at: string;
   member_count?: number;
+  preferred_days: string[];
+  preferred_time: string;
 }
 
 const PickleHelp = () => {
@@ -161,6 +163,16 @@ const PickleHelp = () => {
                         <Users className="w-3 h-3" />
                         {group.member_count} members
                       </span>
+                      {group.preferred_days && group.preferred_days[0] !== "any" && (
+                        <span>
+                          📅 {group.preferred_days.map(d => d.charAt(0).toUpperCase() + d.slice(1, 3)).join(", ")}
+                        </span>
+                      )}
+                      {group.preferred_time && group.preferred_time !== "any" && (
+                        <span>
+                          🕐 {group.preferred_time}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <MessageCircle className="w-5 h-5 text-primary" />

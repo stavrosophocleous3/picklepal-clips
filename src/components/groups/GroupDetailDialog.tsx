@@ -41,6 +41,8 @@ export const GroupDetailDialog = ({
   const [sending, setSending] = useState(false);
   const [groupName, setGroupName] = useState("");
   const [memberCount, setMemberCount] = useState(0);
+  const [preferredDays, setPreferredDays] = useState<string[]>([]);
+  const [preferredTime, setPreferredTime] = useState("");
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const { toast } = useToast();
@@ -57,13 +59,15 @@ export const GroupDetailDialog = ({
         // Fetch group info
         const { data: group, error: groupError } = await supabase
           .from("groups")
-          .select("name, group_members(count)")
+          .select("name, preferred_days, preferred_time, group_members(count)")
           .eq("id", groupId)
           .single();
 
         if (groupError) throw groupError;
         setGroupName(group.name);
         setMemberCount(group.group_members[0]?.count || 0);
+        setPreferredDays(group.preferred_days || []);
+        setPreferredTime(group.preferred_time || "any");
 
         // Fetch messages
         const { data: messagesData, error: messagesError } = await supabase
@@ -182,10 +186,22 @@ export const GroupDetailDialog = ({
             <div className="flex items-center justify-between">
               <div className="flex-1">
                 <DialogTitle>{groupName}</DialogTitle>
-                <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
-                  <Users className="w-3 h-3" />
-                  {memberCount} members
-                </p>
+                <div className="flex flex-col gap-1 mt-1">
+                  <p className="text-sm text-muted-foreground flex items-center gap-1">
+                    <Users className="w-3 h-3" />
+                    {memberCount} members
+                  </p>
+                  {preferredDays && preferredDays[0] !== "any" && (
+                    <p className="text-xs text-muted-foreground">
+                      📅 {preferredDays.map(d => d.charAt(0).toUpperCase() + d.slice(1)).join(", ")}
+                    </p>
+                  )}
+                  {preferredTime && preferredTime !== "any" && (
+                    <p className="text-xs text-muted-foreground">
+                      🕐 {preferredTime}
+                    </p>
+                  )}
+                </div>
               </div>
               <Button
                 size="sm"
