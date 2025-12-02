@@ -21,9 +21,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Send, UserPlus, Loader2, LogOut, MessageCircle, Calendar } from "lucide-react";
+import { Users, Send, UserPlus, Loader2, LogOut, MessageCircle, Calendar, Check, X } from "lucide-react";
 import { InviteMembersDialog } from "./InviteMembersDialog";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 
 interface Message {
   id: string;
@@ -34,6 +35,16 @@ interface Message {
     username: string;
     avatar_url: string | null;
   };
+  rsvps?: GameRsvp[];
+}
+
+interface GameRsvp {
+  id: string;
+  user_id: string;
+  status: 'going' | 'not_going';
+  profiles?: {
+    username: string;
+  } | null;
 }
 
 interface Member {
@@ -79,8 +90,11 @@ export const GroupDetailDialog = ({
   const [gameDate, setGameDate] = useState("");
   const [gameTime, setGameTime] = useState("");
   const [postingGame, setPostingGame] = useState(false);
+  const [rsvpingMessageId, setRsvpingMessageId] = useState<string | null>(null);
   const { toast } = useToast();
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const isGamePost = (content: string) => content.startsWith("🎾 Game Posted!");
 
   useEffect(() => {
     if (!open) return;
@@ -157,9 +171,45 @@ export const GroupDetailDialog = ({
             profiles?.map((p) => [p.id, p]) || []
           );
 
+          // Fetch RSVPs for game posts
+          const gamePostIds = messagesData.filter(m => isGamePost(m.content)).map(m => m.id);
+          let rsvpsMap = new Map<string, GameRsvp[]>();
+          
+          if (gamePostIds.length > 0) {
+            const { data: rsvpsData } = await supabase
+              .from("game_rsvps")
+              .select("*")
+              .in("message_id", gamePostIds);
+
+            if (rsvpsData) {
+              const rsvpUserIds = [...new Set(rsvpsData.map(r => r.user_id))];
+              const { data: rsvpProfiles } = await supabase
+                .from("profiles")
+                .select("id, username")
+                .in("id", rsvpUserIds);
+
+              const rsvpProfilesMap = new Map(
+                rsvpProfiles?.map(p => [p.id, p]) || []
+              );
+
+              rsvpsData.forEach(rsvp => {
+                if (!rsvpsMap.has(rsvp.message_id)) {
+                  rsvpsMap.set(rsvp.message_id, []);
+                }
+                rsvpsMap.get(rsvp.message_id)!.push({
+                  id: rsvp.id,
+                  user_id: rsvp.user_id,
+                  status: rsvp.status as 'going' | 'not_going',
+                  profiles: rsvpProfilesMap.get(rsvp.user_id) || null,
+                });
+              });
+            }
+          }
+
           const messagesWithProfiles = messagesData.map((m) => ({
             ...m,
             profiles: profilesMap.get(m.user_id),
+            rsvps: rsvpsMap.get(m.id) || [],
           }));
 
           setMessages(messagesWithProfiles);
@@ -316,6 +366,110 @@ export const GroupDetailDialog = ({
     }
   };
 
+  const handleRsvp = async (messageId: string, status: 'going' | 'not_going') => {
+    if (!currentUserId) return;
+    
+    setRsvpingMessageId(messageId);
+    try {
+      // Check if user already has an RSVP
+      const { data: existingRsvp } = await supabase
+        .from("game_rsvps")
+        .select("id, status")
+        .eq("message_id", messageId)
+        .eq("user_id", currentUserId)
+        .maybeSingle();
+
+      if (existingRsvp) {
+        if (existingRsvp.status === status) {
+          // Same status clicked - remove RSVP
+          const { error } = await supabase
+            .from("game_rsvps")
+            .delete()
+            .eq("id", existingRsvp.id);
+
+          if (error) throw error;
+
+          // Update local state
+          setMessages(prev => prev.map(msg => {
+            if (msg.id === messageId) {
+              return {
+                ...msg,
+                rsvps: msg.rsvps?.filter(r => r.user_id !== currentUserId) || [],
+              };
+            }
+            return msg;
+          }));
+        } else {
+          // Different status - update RSVP
+          const { error } = await supabase
+            .from("game_rsvps")
+            .update({ status })
+            .eq("id", existingRsvp.id);
+
+          if (error) throw error;
+
+          // Update local state
+          setMessages(prev => prev.map(msg => {
+            if (msg.id === messageId) {
+              return {
+                ...msg,
+                rsvps: msg.rsvps?.map(r => 
+                  r.user_id === currentUserId ? { ...r, status: status as 'going' | 'not_going' } : r
+                ) || [],
+              };
+            }
+            return msg;
+          }));
+        }
+      } else {
+        // No existing RSVP - create new one
+        const { data: newRsvp, error } = await supabase
+          .from("game_rsvps")
+          .insert({
+            group_id: groupId,
+            message_id: messageId,
+            user_id: currentUserId,
+            status,
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        // Fetch user profile
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("username")
+          .eq("id", currentUserId)
+          .single();
+
+        // Update local state
+        setMessages(prev => prev.map(msg => {
+          if (msg.id === messageId) {
+            return {
+              ...msg,
+              rsvps: [...(msg.rsvps || []), {
+                id: newRsvp.id,
+                user_id: currentUserId,
+                status: status as 'going' | 'not_going',
+                profiles: profile || null,
+              }],
+            };
+          }
+          return msg;
+        }));
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error updating RSVP",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setRsvpingMessageId(null);
+    }
+  };
+
   const isCreator = currentUserId === groupCreator;
 
   return (
@@ -399,13 +553,18 @@ export const GroupDetailDialog = ({
                   <div className="space-y-4">
                     {messages.map((message) => {
                       const isCurrentUser = message.user_id === currentUserId;
+                      const isGame = isGamePost(message.content);
+                      const userRsvp = message.rsvps?.find(r => r.user_id === currentUserId);
+                      const goingCount = message.rsvps?.filter(r => r.status === 'going').length || 0;
+                      const notGoingCount = message.rsvps?.filter(r => r.status === 'not_going').length || 0;
+
                       return (
                         <div
                           key={message.id}
                           className={`flex ${isCurrentUser ? "justify-end" : "justify-start"}`}
                         >
                           <div
-                            className={`max-w-[80%] ${
+                            className={`${isGame ? 'max-w-[90%]' : 'max-w-[80%]'} ${
                               isCurrentUser
                                 ? "bg-primary text-primary-foreground"
                                 : "bg-muted"
@@ -417,6 +576,73 @@ export const GroupDetailDialog = ({
                               </p>
                             )}
                             <p className="text-sm break-words whitespace-pre-wrap">{message.content}</p>
+                            
+                            {isGame && (
+                              <div className="mt-3 pt-3 border-t border-primary/20 space-y-2">
+                                <div className="flex gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant={userRsvp?.status === 'going' ? 'default' : 'outline'}
+                                    onClick={() => handleRsvp(message.id, 'going')}
+                                    disabled={rsvpingMessageId === message.id}
+                                    className={`flex-1 gap-1 ${
+                                      isCurrentUser 
+                                        ? 'bg-primary-foreground text-primary hover:bg-primary-foreground/90' 
+                                        : ''
+                                    }`}
+                                  >
+                                    <Check className="w-4 h-4" />
+                                    Going {goingCount > 0 && `(${goingCount})`}
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant={userRsvp?.status === 'not_going' ? 'default' : 'outline'}
+                                    onClick={() => handleRsvp(message.id, 'not_going')}
+                                    disabled={rsvpingMessageId === message.id}
+                                    className={`flex-1 gap-1 ${
+                                      isCurrentUser 
+                                        ? 'bg-primary-foreground text-primary hover:bg-primary-foreground/90' 
+                                        : ''
+                                    }`}
+                                  >
+                                    <X className="w-4 h-4" />
+                                    Can't Make It {notGoingCount > 0 && `(${notGoingCount})`}
+                                  </Button>
+                                </div>
+                                
+                                {(goingCount > 0 || notGoingCount > 0) && (
+                                  <div className="flex flex-wrap gap-1">
+                                    {message.rsvps?.filter(r => r.status === 'going').map(rsvp => (
+                                      <Badge 
+                                        key={rsvp.id} 
+                                        variant="secondary"
+                                        className={`text-xs ${
+                                          isCurrentUser 
+                                            ? 'bg-primary-foreground/20 text-primary-foreground' 
+                                            : ''
+                                        }`}
+                                      >
+                                        ✓ {rsvp.profiles?.username}
+                                      </Badge>
+                                    ))}
+                                    {message.rsvps?.filter(r => r.status === 'not_going').map(rsvp => (
+                                      <Badge 
+                                        key={rsvp.id} 
+                                        variant="outline"
+                                        className={`text-xs ${
+                                          isCurrentUser 
+                                            ? 'border-primary-foreground/30 text-primary-foreground/70' 
+                                            : 'opacity-50'
+                                        }`}
+                                      >
+                                        ✗ {rsvp.profiles?.username}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
                             <p
                               className={`text-xs mt-1 ${
                                 isCurrentUser
