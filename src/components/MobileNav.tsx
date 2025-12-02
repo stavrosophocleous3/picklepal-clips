@@ -1,4 +1,4 @@
-import { Home, TrendingUp, UserPlus, PlusSquare, UsersRound, Users, Medal, MapPin, Clock } from "lucide-react";
+import { Home, TrendingUp, UserPlus, PlusSquare, UsersRound, Users, Medal, MapPin, Clock, CreditCard } from "lucide-react";
 import { NavLink } from "./NavLink";
 import { cn } from "@/lib/utils";
 
@@ -85,6 +85,15 @@ export const MobileNav = () => {
         >
           <UserPlus className="w-6 h-6" />
           <span className="text-xs font-medium">Following</span>
+        </NavLink>
+
+        <NavLink
+          to="/billing"
+          className="flex flex-col items-center justify-center gap-1 transition-colors text-muted-foreground"
+          activeClassName="text-primary"
+        >
+          <CreditCard className="w-6 h-6" />
+          <span className="text-xs font-medium">Billing</span>
         </NavLink>
       </div>
     </nav>
