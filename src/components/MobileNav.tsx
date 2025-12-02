@@ -1,4 +1,4 @@
-import { Home, TrendingUp, UserPlus, PlusSquare, UsersRound, Users, Medal, MapPin } from "lucide-react";
+import { Home, TrendingUp, UserPlus, PlusSquare, UsersRound, Users, Medal, MapPin, Clock } from "lucide-react";
 import { NavLink } from "./NavLink";
 import { cn } from "@/lib/utils";
 
@@ -58,6 +58,15 @@ export const MobileNav = () => {
         >
           <UsersRound className="w-6 h-6" />
           <span className="text-xs font-medium">My Groups</span>
+        </NavLink>
+
+        <NavLink
+          to="/game-time"
+          className="flex flex-col items-center justify-center gap-1 transition-colors text-muted-foreground"
+          activeClassName="text-primary"
+        >
+          <Clock className="w-6 h-6" />
+          <span className="text-xs font-medium">Game Time</span>
         </NavLink>
 
         <NavLink
