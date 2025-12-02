@@ -1,7 +1,11 @@
 import { Card } from "@/components/ui/card";
 import { MobileNav } from "@/components/MobileNav";
-import { Medal, Gift, Coffee, GraduationCap, ShoppingBag } from "lucide-react";
+import { Medal } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import socialReward from "@/assets/rewards/social-reward.png";
+import taphouseReward from "@/assets/rewards/taphouse-reward.png";
+import lessonReward from "@/assets/rewards/lesson-reward.png";
+import equipmentReward from "@/assets/rewards/equipment-reward.png";
 
 const PicklePoints = () => {
   const userPoints = 45; // This would come from user data in real implementation
@@ -12,32 +16,28 @@ const PicklePoints = () => {
       title: "$5 Off Social",
       description: "Get $5 off your next social event",
       points: 5,
-      icon: Gift,
-      color: "text-green-500"
+      image: socialReward,
     },
     {
       id: 2,
       title: "$5 Off Tap House",
       description: "Enjoy $5 off at the tap house",
       points: 10,
-      icon: Coffee,
-      color: "text-amber-500"
+      image: taphouseReward,
     },
     {
       id: 3,
       title: "$10 Off Lesson",
       description: "Save $10 on your next lesson",
       points: 15,
-      icon: GraduationCap,
-      color: "text-blue-500"
+      image: lessonReward,
     },
     {
       id: 4,
       title: "$10 Off Equipment",
       description: "Get $10 off pickleball equipment",
       points: 20,
-      icon: ShoppingBag,
-      color: "text-purple-500"
+      image: equipmentReward,
     }
   ];
 
@@ -68,14 +68,17 @@ const PicklePoints = () => {
           <h2 className="text-xl font-semibold mb-4">Available Rewards</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {rewards.map((reward) => {
-              const Icon = reward.icon;
               const canRedeem = userPoints >= reward.points;
               
               return (
                 <Card key={reward.id} className={`p-6 ${!canRedeem ? 'opacity-60' : ''}`}>
                   <div className="flex items-start gap-4">
-                    <div className={`p-3 rounded-lg bg-muted ${reward.color}`}>
-                      <Icon className="w-6 h-6" />
+                    <div className="w-20 h-20 flex-shrink-0">
+                      <img 
+                        src={reward.image} 
+                        alt={reward.title}
+                        className="w-full h-full object-contain"
+                      />
                     </div>
                     <div className="flex-1">
                       <h3 className="font-semibold text-lg mb-1">{reward.title}</h3>
