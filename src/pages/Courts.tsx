@@ -247,10 +247,20 @@ const Courts = () => {
                       <span className="text-base font-bold leading-none">{monthName}</span>
                     </div>
                     {isSaturday && (
-                      <div className="mt-2 pt-2 border-t border-border/40 w-full flex-1 flex flex-col justify-center">
-                        <p className="text-lg font-bold text-center">2.5-3.0</p>
-                        <p className="text-base text-center leading-tight font-medium mt-1">Anthony Tennis Clinic</p>
-                        <p className="text-lg font-bold text-center mt-2">7:30-8</p>
+                      <div className="mt-2 pt-2 border-t border-border/40 w-full flex-1 flex flex-col justify-center gap-2">
+                        <div>
+                          <p className="text-sm font-bold text-center">2.5-3.0</p>
+                          <p className="text-xs text-center leading-tight font-medium">Anthony Tennis Clinic</p>
+                          <p className="text-sm font-bold text-center">7:30-8</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-center leading-tight font-medium">Anthony Tennis Clinic</p>
+                          <p className="text-sm font-bold text-center">9-10:30</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-center leading-tight font-medium">Tennis Academy</p>
+                          <p className="text-sm font-bold text-center">10-11:30</p>
+                        </div>
                       </div>
                     )}
                   </div>
