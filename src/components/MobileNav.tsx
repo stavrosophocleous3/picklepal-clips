@@ -1,4 +1,4 @@
-import { Home, PlusSquare, UsersRound, Users, Medal, MapPin, Clock } from "lucide-react";
+import { Home, UsersRound, Users, Medal, MapPin, Clock } from "lucide-react";
 import { NavLink } from "./NavLink";
 import { cn } from "@/lib/utils";
 
@@ -31,15 +31,6 @@ export const MobileNav = () => {
         >
           <MapPin className="w-6 h-6" />
           <span className="text-xs font-medium">Courts</span>
-        </NavLink>
-
-        <NavLink
-          to="/upload"
-          className="flex flex-col items-center justify-center gap-1 text-primary"
-        >
-          <div className="bg-primary text-primary-foreground p-2 rounded-xl">
-            <PlusSquare className="w-6 h-6" />
-          </div>
         </NavLink>
 
         <NavLink
