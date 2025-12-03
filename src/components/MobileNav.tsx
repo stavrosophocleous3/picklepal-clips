@@ -1,4 +1,4 @@
-import { Home, TrendingUp, PlusSquare, UsersRound, Users, Medal, MapPin, Clock } from "lucide-react";
+import { Home, PlusSquare, UsersRound, Users, Medal, MapPin, Clock } from "lucide-react";
 import { NavLink } from "./NavLink";
 import { cn } from "@/lib/utils";
 
@@ -31,15 +31,6 @@ export const MobileNav = () => {
         >
           <MapPin className="w-6 h-6" />
           <span className="text-xs font-medium">Courts</span>
-        </NavLink>
-
-        <NavLink
-          to="/trending"
-          className="flex flex-col items-center justify-center gap-1 transition-colors text-muted-foreground"
-          activeClassName="text-primary"
-        >
-          <TrendingUp className="w-6 h-6" />
-          <span className="text-xs font-medium">Trending</span>
         </NavLink>
 
         <NavLink
