@@ -3,7 +3,7 @@ import { MobileNav } from "@/components/MobileNav";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { Loader2, Video as VideoIcon } from "lucide-react";
+import { Loader2, Video as VideoIcon, PlusSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface Video {
@@ -117,6 +117,15 @@ const Home = () => {
   return (
     <div className="h-screen overflow-hidden bg-background">
       <VideoFeed videos={videos} onVoteChange={loadVideos} />
+      
+      {/* Floating Post Button */}
+      <button
+        onClick={() => navigate("/upload")}
+        className="fixed bottom-20 right-4 z-50 bg-primary text-primary-foreground p-3 rounded-full shadow-lg hover:scale-105 transition-transform"
+      >
+        <PlusSquare className="w-6 h-6" />
+      </button>
+      
       <MobileNav />
     </div>
   );
