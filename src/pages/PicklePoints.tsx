@@ -66,6 +66,13 @@ const PicklePoints = () => {
       description: "A personal phone call with Robert and Luis",
       points: 4000000,
       image: socialReward,
+    },
+    {
+      id: 9,
+      title: "Take Fia to Dinner",
+      description: "Can only be redeemed by Stavro",
+      points: 500,
+      image: socialReward,
     }
   ];
 
