@@ -41,37 +41,37 @@ const PicklePoints = () => {
     },
     {
       id: 5,
+      title: "Take Fia to Dinner",
+      description: "Can only be redeemed by Stavro",
+      points: 500,
+      image: socialReward,
+    },
+    {
+      id: 6,
       title: "25% Off Affiliated Brands",
       description: "Selkirk, Dunlop, Wilson, Franklin",
       points: 100,
       image: equipmentReward,
     },
     {
-      id: 6,
+      id: 7,
       title: "2 Day Guest Pass",
       description: "Bring a friend for 2 days",
       points: 200,
       image: socialReward,
     },
     {
-      id: 7,
+      id: 8,
       title: "Date with Traci",
       description: "One exclusive date with Traci",
       points: 1000000,
       image: socialReward,
     },
     {
-      id: 8,
+      id: 9,
       title: "Phone Call with Robert & Luis",
       description: "A personal phone call with Robert and Luis",
       points: 4000000,
-      image: socialReward,
-    },
-    {
-      id: 9,
-      title: "Take Fia to Dinner",
-      description: "Can only be redeemed by Stavro",
-      points: 500,
       image: socialReward,
     }
   ];
