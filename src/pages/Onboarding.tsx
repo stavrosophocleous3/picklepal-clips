@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { 
-  Sparkles, 
   Trophy, 
   Users, 
   Video, 
@@ -28,6 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { motion, AnimatePresence } from "framer-motion";
+import pickleballImg from "@/assets/pickleball.png";
 
 const features = [
   {
@@ -356,9 +356,10 @@ const Onboarding = () => {
         {/* Welcome header on first step */}
         {currentStep === 0 && (
           <div className="text-center space-y-2 animate-fade-in">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full text-primary text-sm font-medium">
-              <Sparkles className="w-4 h-4" />
-              Welcome to PickleTok!
+            <div className="inline-flex items-center gap-3 px-5 py-2.5 bg-primary/10 rounded-full">
+              <img src={pickleballImg} alt="" className="w-6 h-6" />
+              <span className="text-primary text-sm font-medium">Welcome!</span>
+              <img src={pickleballImg} alt="" className="w-6 h-6" />
             </div>
           </div>
         )}
