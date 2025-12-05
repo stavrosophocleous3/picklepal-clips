@@ -9,6 +9,7 @@ import Following from "./pages/Following";
 import Upload from "./pages/Upload";
 import Search from "./pages/Search";
 import Profile from "./pages/Profile";
+import MyProfile from "./pages/MyProfile";
 import Auth from "./pages/Auth";
 import PickleHelp from "./pages/PickleHelp";
 import Coaches from "./pages/Coaches";
@@ -34,6 +35,7 @@ const App = () => (
           <Route path="/upload" element={<Upload />} />
           <Route path="/search" element={<Search />} />
           <Route path="/profile/:userId" element={<Profile />} />
+          <Route path="/my-profile" element={<MyProfile />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/pickle-lab" element={<PickleHelp />} />
           <Route path="/coaches" element={<Coaches />} />
