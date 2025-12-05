@@ -249,6 +249,7 @@ export type Database = {
           full_name: string | null
           id: string
           username: string
+          video_posting_enabled: boolean
         }
         Insert: {
           avatar_url?: string | null
@@ -257,6 +258,7 @@ export type Database = {
           full_name?: string | null
           id: string
           username: string
+          video_posting_enabled?: boolean
         }
         Update: {
           avatar_url?: string | null
@@ -265,6 +267,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           username?: string
+          video_posting_enabled?: boolean
         }
         Relationships: []
       }

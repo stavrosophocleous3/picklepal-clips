@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { MobileNav } from "@/components/MobileNav";
 import { MemberQRCode } from "@/components/MemberQRCode";
 import { Button } from "@/components/ui/button";
-import { User, Settings, Edit2, Camera, LogOut } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { User, Settings, Edit2, Camera, LogOut, Video } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
@@ -15,6 +16,7 @@ interface Profile {
   avatar_url: string | null;
   bio: string | null;
   created_at: string | null;
+  video_posting_enabled: boolean;
 }
 
 const MyProfile = () => {
@@ -93,6 +95,32 @@ const MyProfile = () => {
       description: "You have been signed out successfully.",
     });
     navigate("/auth");
+  };
+
+  const handleVideoPostingToggle = async (enabled: boolean) => {
+    if (!user) return;
+    
+    const { error } = await supabase
+      .from("profiles")
+      .update({ video_posting_enabled: enabled })
+      .eq("id", user.id);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update setting",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setProfile(prev => prev ? { ...prev, video_posting_enabled: enabled } : null);
+    toast({
+      title: enabled ? "Video posting enabled" : "Video posting disabled",
+      description: enabled 
+        ? "You can now share videos on the feed" 
+        : "Your videos section is now hidden",
+    });
   };
 
   const formatDate = (dateString: string | null) => {
@@ -210,14 +238,35 @@ const MyProfile = () => {
           </div>
         </div>
 
-        {/* Placeholder for videos */}
-        <div className="p-4">
-          <h3 className="text-lg font-semibold mb-4">My Videos</h3>
-          <div className="text-center py-8 text-muted-foreground">
-            <p>No videos yet</p>
-            <p className="text-sm">Start sharing your pickleball moments!</p>
+        {/* Video Posting Settings */}
+        <div className="p-4 border-b border-border">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Video className="w-5 h-5 text-muted-foreground" />
+              <div>
+                <p className="font-medium">Enable Video Posting</p>
+                <p className="text-sm text-muted-foreground">
+                  Allow your account to post content
+                </p>
+              </div>
+            </div>
+            <Switch
+              checked={profile?.video_posting_enabled ?? false}
+              onCheckedChange={handleVideoPostingToggle}
+            />
           </div>
         </div>
+
+        {/* My Videos - only shown if enabled */}
+        {profile?.video_posting_enabled && (
+          <div className="p-4">
+            <h3 className="text-lg font-semibold mb-4">My Videos</h3>
+            <div className="text-center py-8 text-muted-foreground">
+              <p>No videos yet</p>
+              <p className="text-sm">Start sharing your pickleball moments!</p>
+            </div>
+          </div>
+        )}
       </div>
 
       <MobileNav />
