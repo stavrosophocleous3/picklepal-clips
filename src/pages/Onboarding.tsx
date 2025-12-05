@@ -15,8 +15,18 @@ import {
   ChevronRight, 
   Check,
   Camera,
-  User
+  User,
+  Target,
+  Clock,
+  Gamepad2
 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { motion, AnimatePresence } from "framer-motion";
 
 const features = [
@@ -54,6 +64,9 @@ const Onboarding = () => {
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [fullName, setFullName] = useState("");
   const [bio, setBio] = useState("");
+  const [skillLevel, setSkillLevel] = useState("");
+  const [yearsPlaying, setYearsPlaying] = useState("");
+  const [playStyle, setPlayStyle] = useState("");
   const [saving, setSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
@@ -239,18 +252,75 @@ const Onboarding = () => {
               />
             </div>
 
+            {/* Skill Level */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium flex items-center gap-2">
+                <Target className="w-4 h-4 text-primary" />
+                Skill Level
+              </Label>
+              <Select value={skillLevel} onValueChange={setSkillLevel}>
+                <SelectTrigger className="h-12 rounded-xl bg-background/50 border-border/50 focus:border-primary transition-all">
+                  <SelectValue placeholder="Select your skill level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="beginner">Beginner (1.0 - 2.5)</SelectItem>
+                  <SelectItem value="intermediate">Intermediate (3.0 - 3.5)</SelectItem>
+                  <SelectItem value="advanced">Advanced (4.0 - 4.5)</SelectItem>
+                  <SelectItem value="pro">Pro (5.0+)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Years Playing */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium flex items-center gap-2">
+                <Clock className="w-4 h-4 text-primary" />
+                How long have you been playing?
+              </Label>
+              <Select value={yearsPlaying} onValueChange={setYearsPlaying}>
+                <SelectTrigger className="h-12 rounded-xl bg-background/50 border-border/50 focus:border-primary transition-all">
+                  <SelectValue placeholder="Select experience" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="new">Just starting out</SelectItem>
+                  <SelectItem value="6months">Less than 6 months</SelectItem>
+                  <SelectItem value="1year">6 months - 1 year</SelectItem>
+                  <SelectItem value="2years">1 - 2 years</SelectItem>
+                  <SelectItem value="3plus">3+ years</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Play Style */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium flex items-center gap-2">
+                <Gamepad2 className="w-4 h-4 text-primary" />
+                Preferred Play Style
+              </Label>
+              <Select value={playStyle} onValueChange={setPlayStyle}>
+                <SelectTrigger className="h-12 rounded-xl bg-background/50 border-border/50 focus:border-primary transition-all">
+                  <SelectValue placeholder="Select play style" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="singles">Singles</SelectItem>
+                  <SelectItem value="doubles">Doubles</SelectItem>
+                  <SelectItem value="both">Both - I love it all!</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             {/* Bio Input */}
             <div className="space-y-2">
               <Label htmlFor="bio" className="text-sm font-medium flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-primary" />
-                Bio
+                Bio (optional)
               </Label>
               <Textarea
                 id="bio"
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
-                placeholder="Tell us about yourself... How long have you been playing? Favorite shot?"
-                className="min-h-[100px] rounded-xl bg-background/50 border-border/50 focus:border-primary transition-all resize-none"
+                placeholder="Anything else you'd like to share? Favorite shot, goals, etc."
+                className="min-h-[80px] rounded-xl bg-background/50 border-border/50 focus:border-primary transition-all resize-none"
                 maxLength={200}
               />
               <p className="text-xs text-muted-foreground text-right">{bio.length}/200</p>
