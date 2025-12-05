@@ -17,7 +17,11 @@ import {
   User,
   Building2,
   Mail,
-  Phone
+  Phone,
+  MapPinHouse,
+  MessageSquare,
+  Megaphone,
+  Heart
 } from "lucide-react";
 import {
   Select,
@@ -66,6 +70,11 @@ const Onboarding = () => {
   const [primaryClub, setPrimaryClub] = useState("");
   const [email, setEmail] = useState("");
   const [mobileNumber, setMobileNumber] = useState("");
+  const [city, setCity] = useState("");
+  const [address, setAddress] = useState("");
+  const [preferredContact, setPreferredContact] = useState("");
+  const [howHeard, setHowHeard] = useState("");
+  const [clubInterests, setClubInterests] = useState("");
   const [saving, setSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
@@ -300,6 +309,95 @@ const Onboarding = () => {
                 placeholder="(555) 123-4567"
                 className="h-12 rounded-xl bg-background/50 border-border/50 focus:border-primary transition-all"
               />
+            </div>
+
+            {/* City */}
+            <div className="space-y-2">
+              <Label htmlFor="city" className="text-sm font-medium flex items-center gap-2">
+                <MapPinHouse className="w-4 h-4 text-primary" />
+                City
+              </Label>
+              <Input
+                id="city"
+                type="text"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder="Enter your city"
+                className="h-12 rounded-xl bg-background/50 border-border/50 focus:border-primary transition-all"
+              />
+            </div>
+
+            {/* Address */}
+            <div className="space-y-2">
+              <Label htmlFor="address" className="text-sm font-medium flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-primary" />
+                Address
+              </Label>
+              <Input
+                id="address"
+                type="text"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="Enter your address"
+                className="h-12 rounded-xl bg-background/50 border-border/50 focus:border-primary transition-all"
+              />
+            </div>
+
+            {/* Preferred Contact Method */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium flex items-center gap-2">
+                <MessageSquare className="w-4 h-4 text-primary" />
+                Preferred Contact Method
+              </Label>
+              <Select value={preferredContact} onValueChange={setPreferredContact}>
+                <SelectTrigger className="h-12 rounded-xl bg-background/50 border-border/50 focus:border-primary transition-all">
+                  <SelectValue placeholder="How should we contact you?" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="phone">Phone</SelectItem>
+                  <SelectItem value="email">Email</SelectItem>
+                  <SelectItem value="both">Both</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* How'd You Hear About Us */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium flex items-center gap-2">
+                <Megaphone className="w-4 h-4 text-primary" />
+                How'd you hear about us?
+              </Label>
+              <Select value={howHeard} onValueChange={setHowHeard}>
+                <SelectTrigger className="h-12 rounded-xl bg-background/50 border-border/50 focus:border-primary transition-all">
+                  <SelectValue placeholder="Select an option" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="friend">Friend or Family</SelectItem>
+                  <SelectItem value="social-media">Social Media</SelectItem>
+                  <SelectItem value="google">Google Search</SelectItem>
+                  <SelectItem value="event">Local Event</SelectItem>
+                  <SelectItem value="flyer">Flyer or Poster</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Club Interests */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium flex items-center gap-2">
+                <Heart className="w-4 h-4 text-primary" />
+                Club Interests
+              </Label>
+              <Select value={clubInterests} onValueChange={setClubInterests}>
+                <SelectTrigger className="h-12 rounded-xl bg-background/50 border-border/50 focus:border-primary transition-all">
+                  <SelectValue placeholder="What are you interested in?" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="tennis">Tennis</SelectItem>
+                  <SelectItem value="pickleball">Pickleball</SelectItem>
+                  <SelectItem value="both">Both</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </motion.div>
 
