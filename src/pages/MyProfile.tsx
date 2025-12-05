@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { MobileNav } from "@/components/MobileNav";
+import { MemberQRCode } from "@/components/MemberQRCode";
 import { Button } from "@/components/ui/button";
 import { User, Settings, Edit2, Camera, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -184,6 +185,15 @@ const MyProfile = () => {
             Edit Profile
           </Button>
         </div>
+
+        {/* Member QR Code */}
+        {user && (
+          <MemberQRCode
+            memberId={user.id}
+            memberName={profile?.full_name || profile?.username || "Member"}
+            username={profile?.username || user.email?.split("@")[0] || "member"}
+          />
+        )}
 
         {/* Profile Details */}
         <div className="p-4 border-b border-border">
