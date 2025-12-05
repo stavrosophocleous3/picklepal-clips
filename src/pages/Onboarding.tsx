@@ -16,9 +16,9 @@ import {
   Check,
   Camera,
   User,
-  Target,
-  Clock,
-  Gamepad2
+  Building2,
+  Mail,
+  Phone
 } from "lucide-react";
 import {
   Select,
@@ -63,10 +63,9 @@ const Onboarding = () => {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [fullName, setFullName] = useState("");
-  const [bio, setBio] = useState("");
-  const [skillLevel, setSkillLevel] = useState("");
-  const [yearsPlaying, setYearsPlaying] = useState("");
-  const [playStyle, setPlayStyle] = useState("");
+  const [primaryClub, setPrimaryClub] = useState("");
+  const [email, setEmail] = useState("");
+  const [mobileNumber, setMobileNumber] = useState("");
   const [saving, setSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
@@ -129,7 +128,6 @@ const Onboarding = () => {
         .update({
           avatar_url: finalAvatarUrl,
           full_name: fullName.trim() || null,
-          bio: bio.trim() || null,
         })
         .eq('id', userId);
       
@@ -252,78 +250,56 @@ const Onboarding = () => {
               />
             </div>
 
-            {/* Skill Level */}
+            {/* Primary Club */}
             <div className="space-y-2">
               <Label className="text-sm font-medium flex items-center gap-2">
-                <Target className="w-4 h-4 text-primary" />
-                Skill Level
+                <Building2 className="w-4 h-4 text-primary" />
+                Primary Club
               </Label>
-              <Select value={skillLevel} onValueChange={setSkillLevel}>
+              <Select value={primaryClub} onValueChange={setPrimaryClub}>
                 <SelectTrigger className="h-12 rounded-xl bg-background/50 border-border/50 focus:border-primary transition-all">
-                  <SelectValue placeholder="Select your skill level" />
+                  <SelectValue placeholder="Select your primary club" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="beginner">Beginner (1.0 - 2.5)</SelectItem>
-                  <SelectItem value="intermediate">Intermediate (3.0 - 3.5)</SelectItem>
-                  <SelectItem value="advanced">Advanced (4.0 - 4.5)</SelectItem>
-                  <SelectItem value="pro">Pro (5.0+)</SelectItem>
+                  <SelectItem value="sierra-sport-racquet">Sierra Sport & Racquet Club</SelectItem>
+                  <SelectItem value="downtown-pickleball">Downtown Pickleball Center</SelectItem>
+                  <SelectItem value="lakeside-courts">Lakeside Courts</SelectItem>
+                  <SelectItem value="community-rec">Community Recreation Center</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Years Playing */}
+            {/* Email */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium flex items-center gap-2">
-                <Clock className="w-4 h-4 text-primary" />
-                How long have you been playing?
+              <Label htmlFor="email" className="text-sm font-medium flex items-center gap-2">
+                <Mail className="w-4 h-4 text-primary" />
+                Email
               </Label>
-              <Select value={yearsPlaying} onValueChange={setYearsPlaying}>
-                <SelectTrigger className="h-12 rounded-xl bg-background/50 border-border/50 focus:border-primary transition-all">
-                  <SelectValue placeholder="Select experience" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="new">Just starting out</SelectItem>
-                  <SelectItem value="6months">Less than 6 months</SelectItem>
-                  <SelectItem value="1year">6 months - 1 year</SelectItem>
-                  <SelectItem value="2years">1 - 2 years</SelectItem>
-                  <SelectItem value="3plus">3+ years</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Play Style */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium flex items-center gap-2">
-                <Gamepad2 className="w-4 h-4 text-primary" />
-                Preferred Play Style
-              </Label>
-              <Select value={playStyle} onValueChange={setPlayStyle}>
-                <SelectTrigger className="h-12 rounded-xl bg-background/50 border-border/50 focus:border-primary transition-all">
-                  <SelectValue placeholder="Select play style" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="singles">Singles</SelectItem>
-                  <SelectItem value="doubles">Doubles</SelectItem>
-                  <SelectItem value="both">Both - I love it all!</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Bio Input */}
-            <div className="space-y-2">
-              <Label htmlFor="bio" className="text-sm font-medium flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-primary" />
-                Bio (optional)
-              </Label>
-              <Textarea
-                id="bio"
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-                placeholder="Anything else you'd like to share? Favorite shot, goals, etc."
-                className="min-h-[80px] rounded-xl bg-background/50 border-border/50 focus:border-primary transition-all resize-none"
-                maxLength={200}
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="your@email.com"
+                className="h-12 rounded-xl bg-background/50 border-border/50 focus:border-primary transition-all"
               />
-              <p className="text-xs text-muted-foreground text-right">{bio.length}/200</p>
+            </div>
+
+            {/* Mobile Number */}
+            <div className="space-y-2">
+              <Label htmlFor="mobile" className="text-sm font-medium flex items-center gap-2">
+                <Phone className="w-4 h-4 text-primary" />
+                Mobile Number
+              </Label>
+              <Input
+                id="mobile"
+                type="tel"
+                value={mobileNumber}
+                onChange={(e) => setMobileNumber(e.target.value)}
+                placeholder="(555) 123-4567"
+                className="h-12 rounded-xl bg-background/50 border-border/50 focus:border-primary transition-all"
+              />
             </div>
           </motion.div>
 
