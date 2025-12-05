@@ -70,7 +70,7 @@ const Auth = () => {
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/`,
+            emailRedirectTo: `${window.location.origin}/onboarding`,
             data: {
               username,
             },
@@ -94,6 +94,9 @@ const Auth = () => {
           title: "Account created!",
           description: "Welcome to PickleTok",
         });
+        
+        // Redirect new users to onboarding
+        navigate("/onboarding");
       }
     } catch (error: any) {
       toast({
