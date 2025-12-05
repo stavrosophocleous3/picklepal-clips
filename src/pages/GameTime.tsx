@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MobileNav } from "@/components/MobileNav";
 import { Clock, Users } from "lucide-react";
+import GameTimeMap from "@/components/GameTimeMap";
 
 const GameTime = () => {
   const [attendance, setAttendance] = useState({
@@ -38,6 +39,9 @@ const GameTime = () => {
             <p className="text-sm text-muted-foreground">Schedule and join games</p>
           </div>
         </div>
+
+        {/* Map Section */}
+        <GameTimeMap className="mb-6" />
 
         <div className="space-y-4">
           {/* Open Play Section */}
