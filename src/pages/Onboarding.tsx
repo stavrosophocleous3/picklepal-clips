@@ -75,6 +75,8 @@ const Onboarding = () => {
   const [preferredContact, setPreferredContact] = useState("");
   const [howHeard, setHowHeard] = useState("");
   const [clubInterests, setClubInterests] = useState("");
+  const [tennisRating, setTennisRating] = useState("");
+  const [pickleballRating, setPickleballRating] = useState("");
   const [saving, setSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
@@ -396,6 +398,46 @@ const Onboarding = () => {
                   <SelectItem value="tennis">Tennis</SelectItem>
                   <SelectItem value="pickleball">Pickleball</SelectItem>
                   <SelectItem value="both">Both</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Tennis Skill Rating */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium flex items-center gap-2">
+                <Trophy className="w-4 h-4 text-primary" />
+                Tennis Skill Rating
+              </Label>
+              <Select value={tennisRating} onValueChange={setTennisRating}>
+                <SelectTrigger className="h-12 rounded-xl bg-background/50 border-border/50 focus:border-primary transition-all">
+                  <SelectValue placeholder="Select your tennis level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="2.5-3.0">2.5 - 3.0</SelectItem>
+                  <SelectItem value="3.25-3.5">3.25 - 3.5</SelectItem>
+                  <SelectItem value="3.5-4.0">3.5 - 4.0</SelectItem>
+                  <SelectItem value="4.0-4.5">4.0 - 4.5</SelectItem>
+                  <SelectItem value="5.0+">5.0+</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Pickleball Skill Rating */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium flex items-center gap-2">
+                <Trophy className="w-4 h-4 text-primary" />
+                Pickleball Skill Rating
+              </Label>
+              <Select value={pickleballRating} onValueChange={setPickleballRating}>
+                <SelectTrigger className="h-12 rounded-xl bg-background/50 border-border/50 focus:border-primary transition-all">
+                  <SelectValue placeholder="Select your pickleball level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="2.5-3.0">2.5 - 3.0</SelectItem>
+                  <SelectItem value="3.25-3.5">3.25 - 3.5</SelectItem>
+                  <SelectItem value="3.5-4.0">3.5 - 4.0</SelectItem>
+                  <SelectItem value="4.0-4.5">4.0 - 4.5</SelectItem>
+                  <SelectItem value="5.0+">5.0+</SelectItem>
                 </SelectContent>
               </Select>
             </div>
