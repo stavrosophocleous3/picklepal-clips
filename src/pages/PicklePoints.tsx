@@ -1,16 +1,30 @@
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { MobileNav } from "@/components/MobileNav";
-import { Medal, Crown, Trophy } from "lucide-react";
+import { Medal, Crown, Trophy, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import socialReward from "@/assets/rewards/social-reward.png";
 import taphouseReward from "@/assets/rewards/taphouse-reward.png";
 import lessonReward from "@/assets/rewards/lesson-reward.png";
 import equipmentReward from "@/assets/rewards/equipment-reward.png";
 
+interface LeaderboardUser {
+  rank: number;
+  name: string;
+  username: string;
+  points: number;
+  avatar: string;
+  wins: number;
+  losses: number;
+  tournaments: { name: string; place: number; date: string }[];
+}
+
 const PicklePoints = () => {
   const userPoints = 45;
+  const [selectedUser, setSelectedUser] = useState<LeaderboardUser | null>(null);
 
   const rewards = [
     {
@@ -71,17 +85,17 @@ const PicklePoints = () => {
     }
   ];
 
-  const leaderboardData = [
-    { rank: 1, name: "Mike Johnson", username: "@mikej", points: 2450, avatar: "https://i.pravatar.cc/150?img=11" },
-    { rank: 2, name: "Sarah Williams", username: "@sarahw", points: 2180, avatar: "https://i.pravatar.cc/150?img=5" },
-    { rank: 3, name: "David Chen", username: "@davidc", points: 1920, avatar: "https://i.pravatar.cc/150?img=12" },
-    { rank: 4, name: "Emily Rodriguez", username: "@emilyr", points: 1755, avatar: "https://i.pravatar.cc/150?img=9" },
-    { rank: 5, name: "James Thompson", username: "@jamest", points: 1680, avatar: "https://i.pravatar.cc/150?img=13" },
-    { rank: 6, name: "Lisa Park", username: "@lisap", points: 1520, avatar: "https://i.pravatar.cc/150?img=16" },
-    { rank: 7, name: "Robert Smith", username: "@roberts", points: 1340, avatar: "https://i.pravatar.cc/150?img=14" },
-    { rank: 8, name: "Amanda Lee", username: "@amandal", points: 1180, avatar: "https://i.pravatar.cc/150?img=20" },
-    { rank: 9, name: "Chris Martinez", username: "@chrism", points: 1050, avatar: "https://i.pravatar.cc/150?img=15" },
-    { rank: 10, name: "Jessica Brown", username: "@jessicab", points: 890, avatar: "https://i.pravatar.cc/150?img=25" },
+  const leaderboardData: LeaderboardUser[] = [
+    { rank: 1, name: "Mike Johnson", username: "@mikej", points: 2450, avatar: "https://i.pravatar.cc/150?img=11", wins: 47, losses: 12, tournaments: [{ name: "Summer Slam 2024", place: 1, date: "Aug 2024" }, { name: "Spring Classic", place: 1, date: "Apr 2024" }, { name: "Winter Open", place: 2, date: "Jan 2024" }] },
+    { rank: 2, name: "Sarah Williams", username: "@sarahw", points: 2180, avatar: "https://i.pravatar.cc/150?img=5", wins: 42, losses: 15, tournaments: [{ name: "Summer Slam 2024", place: 2, date: "Aug 2024" }, { name: "Ladies League Finals", place: 1, date: "Jun 2024" }] },
+    { rank: 3, name: "David Chen", username: "@davidc", points: 1920, avatar: "https://i.pravatar.cc/150?img=12", wins: 38, losses: 18, tournaments: [{ name: "Mixed Doubles Championship", place: 1, date: "Jul 2024" }, { name: "Spring Classic", place: 3, date: "Apr 2024" }] },
+    { rank: 4, name: "Emily Rodriguez", username: "@emilyr", points: 1755, avatar: "https://i.pravatar.cc/150?img=9", wins: 35, losses: 20, tournaments: [{ name: "Beginners Bash", place: 1, date: "May 2024" }] },
+    { rank: 5, name: "James Thompson", username: "@jamest", points: 1680, avatar: "https://i.pravatar.cc/150?img=13", wins: 33, losses: 22, tournaments: [{ name: "Summer Slam 2024", place: 3, date: "Aug 2024" }] },
+    { rank: 6, name: "Lisa Park", username: "@lisap", points: 1520, avatar: "https://i.pravatar.cc/150?img=16", wins: 29, losses: 19, tournaments: [] },
+    { rank: 7, name: "Robert Smith", username: "@roberts", points: 1340, avatar: "https://i.pravatar.cc/150?img=14", wins: 26, losses: 24, tournaments: [{ name: "Weekend Warriors", place: 2, date: "Mar 2024" }] },
+    { rank: 8, name: "Amanda Lee", username: "@amandal", points: 1180, avatar: "https://i.pravatar.cc/150?img=20", wins: 22, losses: 21, tournaments: [] },
+    { rank: 9, name: "Chris Martinez", username: "@chrism", points: 1050, avatar: "https://i.pravatar.cc/150?img=15", wins: 19, losses: 23, tournaments: [] },
+    { rank: 10, name: "Jessica Brown", username: "@jessicab", points: 890, avatar: "https://i.pravatar.cc/150?img=25", wins: 16, losses: 18, tournaments: [{ name: "Newbie Knockout", place: 1, date: "Feb 2024" }] },
   ];
 
   const getRankBadge = (rank: number) => {
@@ -89,6 +103,13 @@ const PicklePoints = () => {
     if (rank === 2) return <Medal className="w-5 h-5 text-gray-400" />;
     if (rank === 3) return <Trophy className="w-5 h-5 text-amber-600" />;
     return <span className="w-5 h-5 flex items-center justify-center text-sm font-bold text-muted-foreground">{rank}</span>;
+  };
+
+  const getPlaceSuffix = (place: number) => {
+    if (place === 1) return "1st";
+    if (place === 2) return "2nd";
+    if (place === 3) return "3rd";
+    return `${place}th`;
   };
 
   return (
@@ -174,7 +195,8 @@ const PicklePoints = () => {
               {leaderboardData.map((user) => (
                 <Card 
                   key={user.rank} 
-                  className={`p-4 ${user.rank <= 3 ? 'border-primary/30 bg-primary/5' : ''}`}
+                  className={`p-4 cursor-pointer transition-all hover:scale-[1.02] ${user.rank <= 3 ? 'border-primary/30 bg-primary/5' : ''}`}
+                  onClick={() => setSelectedUser(user)}
                 >
                   <div className="flex items-center gap-4">
                     <div className="w-8 flex justify-center">
@@ -199,6 +221,95 @@ const PicklePoints = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Player Details Dialog */}
+      <Dialog open={!!selectedUser} onOpenChange={() => setSelectedUser(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3">
+              <Avatar className="h-14 w-14">
+                <AvatarImage src={selectedUser?.avatar} alt={selectedUser?.name} />
+                <AvatarFallback>{selectedUser?.name?.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="text-xl">{selectedUser?.name}</p>
+                <p className="text-sm text-muted-foreground font-normal">{selectedUser?.username}</p>
+              </div>
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-6 pt-4">
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div className="bg-primary/10 rounded-lg p-3">
+                <p className="text-2xl font-bold text-primary">{selectedUser?.points.toLocaleString()}</p>
+                <p className="text-xs text-muted-foreground">Points</p>
+              </div>
+              <div className="bg-green-500/10 rounded-lg p-3">
+                <p className="text-2xl font-bold text-green-600">{selectedUser?.wins}</p>
+                <p className="text-xs text-muted-foreground">Wins</p>
+              </div>
+              <div className="bg-red-500/10 rounded-lg p-3">
+                <p className="text-2xl font-bold text-red-500">{selectedUser?.losses}</p>
+                <p className="text-xs text-muted-foreground">Losses</p>
+              </div>
+            </div>
+
+            {/* Win Rate */}
+            <div className="bg-muted/50 rounded-lg p-3">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm text-muted-foreground">Win Rate</span>
+                <span className="font-bold">
+                  {selectedUser && Math.round((selectedUser.wins / (selectedUser.wins + selectedUser.losses)) * 100)}%
+                </span>
+              </div>
+              <div className="w-full bg-muted rounded-full h-2">
+                <div 
+                  className="bg-primary h-2 rounded-full transition-all"
+                  style={{ 
+                    width: selectedUser 
+                      ? `${(selectedUser.wins / (selectedUser.wins + selectedUser.losses)) * 100}%` 
+                      : '0%' 
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Tournaments */}
+            <div>
+              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                <Trophy className="w-4 h-4 text-primary" />
+                Tournament History
+              </h3>
+              {selectedUser?.tournaments && selectedUser.tournaments.length > 0 ? (
+                <div className="space-y-2">
+                  {selectedUser.tournaments.map((tournament, idx) => (
+                    <div key={idx} className="flex items-center justify-between bg-muted/30 rounded-lg p-3">
+                      <div>
+                        <p className="font-medium text-sm">{tournament.name}</p>
+                        <p className="text-xs text-muted-foreground">{tournament.date}</p>
+                      </div>
+                      <div className={`px-2 py-1 rounded text-xs font-bold ${
+                        tournament.place === 1 ? 'bg-yellow-500/20 text-yellow-600' :
+                        tournament.place === 2 ? 'bg-gray-400/20 text-gray-600' :
+                        tournament.place === 3 ? 'bg-amber-600/20 text-amber-600' :
+                        'bg-muted text-muted-foreground'
+                      }`}>
+                        {getPlaceSuffix(tournament.place)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  No tournament wins yet
+                </p>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <MobileNav />
     </div>
   );
