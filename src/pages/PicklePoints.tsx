@@ -1,11 +1,17 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { MobileNav } from "@/components/MobileNav";
-import { Medal, Crown, Trophy, X } from "lucide-react";
+import { Medal, Crown, Trophy, Flame, Star, Zap, Users, Video, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import socialReward from "@/assets/rewards/social-reward.png";
 import taphouseReward from "@/assets/rewards/taphouse-reward.png";
 import lessonReward from "@/assets/rewards/lesson-reward.png";
@@ -20,7 +26,45 @@ interface LeaderboardUser {
   wins: number;
   losses: number;
   tournaments: { name: string; place: number; date: string }[];
+  groupMemberships: number;
+  videosPosted: number;
 }
+
+// Badge calculation helpers
+const getUserBadges = (user: LeaderboardUser) => {
+  const badges: { id: string; icon: React.ReactNode; color: string; name: string }[] = [];
+  const tournamentWins = user.tournaments.filter(t => t.place === 1).length;
+  const tournamentPodiums = user.tournaments.filter(t => t.place <= 3).length;
+  const totalMatches = user.wins + user.losses;
+  const winRate = totalMatches > 0 ? user.wins / totalMatches : 0;
+
+  if (tournamentWins >= 1) {
+    badges.push({ id: "champion", icon: <Trophy className="w-3.5 h-3.5" />, color: "text-yellow-500", name: "Tournament Champion" });
+  }
+  if (tournamentPodiums >= 1 && tournamentWins === 0) {
+    badges.push({ id: "podium", icon: <Medal className="w-3.5 h-3.5" />, color: "text-slate-400", name: "Podium Finisher" });
+  }
+  if (totalMatches >= 5 && winRate > 0.6) {
+    badges.push({ id: "streak", icon: <Flame className="w-3.5 h-3.5" />, color: "text-orange-500", name: "Hot Streak" });
+  }
+  if (user.points >= 100) {
+    badges.push({ id: "leader", icon: <Crown className="w-3.5 h-3.5" />, color: "text-purple-500", name: "Points Leader" });
+  }
+  if (user.points >= 500) {
+    badges.push({ id: "star", icon: <Star className="w-3.5 h-3.5" />, color: "text-blue-500", name: "Rising Star" });
+  }
+  if (totalMatches >= 20) {
+    badges.push({ id: "regular", icon: <Zap className="w-3.5 h-3.5" />, color: "text-green-500", name: "Regular Player" });
+  }
+  if (user.groupMemberships >= 3) {
+    badges.push({ id: "social", icon: <Users className="w-3.5 h-3.5" />, color: "text-pink-500", name: "Social Butterfly" });
+  }
+  if (user.videosPosted >= 5) {
+    badges.push({ id: "creator", icon: <Video className="w-3.5 h-3.5" />, color: "text-red-500", name: "Content Creator" });
+  }
+
+  return badges;
+};
 
 const PicklePoints = () => {
   const userPoints = 45;
@@ -86,16 +130,16 @@ const PicklePoints = () => {
   ];
 
   const leaderboardData: LeaderboardUser[] = [
-    { rank: 1, name: "Mike Johnson", username: "@mikej", points: 2450, avatar: "https://i.pravatar.cc/150?img=11", wins: 47, losses: 12, tournaments: [{ name: "Summer Slam 2024", place: 1, date: "Aug 2024" }, { name: "Spring Classic", place: 1, date: "Apr 2024" }, { name: "Winter Open", place: 2, date: "Jan 2024" }] },
-    { rank: 2, name: "Sarah Williams", username: "@sarahw", points: 2180, avatar: "https://i.pravatar.cc/150?img=5", wins: 42, losses: 15, tournaments: [{ name: "Summer Slam 2024", place: 2, date: "Aug 2024" }, { name: "Ladies League Finals", place: 1, date: "Jun 2024" }] },
-    { rank: 3, name: "David Chen", username: "@davidc", points: 1920, avatar: "https://i.pravatar.cc/150?img=12", wins: 38, losses: 18, tournaments: [{ name: "Mixed Doubles Championship", place: 1, date: "Jul 2024" }, { name: "Spring Classic", place: 3, date: "Apr 2024" }] },
-    { rank: 4, name: "Emily Rodriguez", username: "@emilyr", points: 1755, avatar: "https://i.pravatar.cc/150?img=9", wins: 35, losses: 20, tournaments: [{ name: "Beginners Bash", place: 1, date: "May 2024" }] },
-    { rank: 5, name: "James Thompson", username: "@jamest", points: 1680, avatar: "https://i.pravatar.cc/150?img=13", wins: 33, losses: 22, tournaments: [{ name: "Summer Slam 2024", place: 3, date: "Aug 2024" }] },
-    { rank: 6, name: "Lisa Park", username: "@lisap", points: 1520, avatar: "https://i.pravatar.cc/150?img=16", wins: 29, losses: 19, tournaments: [] },
-    { rank: 7, name: "Robert Smith", username: "@roberts", points: 1340, avatar: "https://i.pravatar.cc/150?img=14", wins: 26, losses: 24, tournaments: [{ name: "Weekend Warriors", place: 2, date: "Mar 2024" }] },
-    { rank: 8, name: "Amanda Lee", username: "@amandal", points: 1180, avatar: "https://i.pravatar.cc/150?img=20", wins: 22, losses: 21, tournaments: [] },
-    { rank: 9, name: "Chris Martinez", username: "@chrism", points: 1050, avatar: "https://i.pravatar.cc/150?img=15", wins: 19, losses: 23, tournaments: [] },
-    { rank: 10, name: "Jessica Brown", username: "@jessicab", points: 890, avatar: "https://i.pravatar.cc/150?img=25", wins: 16, losses: 18, tournaments: [{ name: "Newbie Knockout", place: 1, date: "Feb 2024" }] },
+    { rank: 1, name: "Mike Johnson", username: "@mikej", points: 2450, avatar: "https://i.pravatar.cc/150?img=11", wins: 47, losses: 12, tournaments: [{ name: "Summer Slam 2024", place: 1, date: "Aug 2024" }, { name: "Spring Classic", place: 1, date: "Apr 2024" }, { name: "Winter Open", place: 2, date: "Jan 2024" }], groupMemberships: 5, videosPosted: 8 },
+    { rank: 2, name: "Sarah Williams", username: "@sarahw", points: 2180, avatar: "https://i.pravatar.cc/150?img=5", wins: 42, losses: 15, tournaments: [{ name: "Summer Slam 2024", place: 2, date: "Aug 2024" }, { name: "Ladies League Finals", place: 1, date: "Jun 2024" }], groupMemberships: 4, videosPosted: 12 },
+    { rank: 3, name: "David Chen", username: "@davidc", points: 1920, avatar: "https://i.pravatar.cc/150?img=12", wins: 38, losses: 18, tournaments: [{ name: "Mixed Doubles Championship", place: 1, date: "Jul 2024" }, { name: "Spring Classic", place: 3, date: "Apr 2024" }], groupMemberships: 3, videosPosted: 5 },
+    { rank: 4, name: "Emily Rodriguez", username: "@emilyr", points: 1755, avatar: "https://i.pravatar.cc/150?img=9", wins: 35, losses: 20, tournaments: [{ name: "Beginners Bash", place: 1, date: "May 2024" }], groupMemberships: 2, videosPosted: 3 },
+    { rank: 5, name: "James Thompson", username: "@jamest", points: 1680, avatar: "https://i.pravatar.cc/150?img=13", wins: 33, losses: 22, tournaments: [{ name: "Summer Slam 2024", place: 3, date: "Aug 2024" }], groupMemberships: 4, videosPosted: 0 },
+    { rank: 6, name: "Lisa Park", username: "@lisap", points: 1520, avatar: "https://i.pravatar.cc/150?img=16", wins: 29, losses: 19, tournaments: [], groupMemberships: 6, videosPosted: 7 },
+    { rank: 7, name: "Robert Smith", username: "@roberts", points: 1340, avatar: "https://i.pravatar.cc/150?img=14", wins: 26, losses: 24, tournaments: [{ name: "Weekend Warriors", place: 2, date: "Mar 2024" }], groupMemberships: 1, videosPosted: 0 },
+    { rank: 8, name: "Amanda Lee", username: "@amandal", points: 1180, avatar: "https://i.pravatar.cc/150?img=20", wins: 22, losses: 21, tournaments: [], groupMemberships: 3, videosPosted: 2 },
+    { rank: 9, name: "Chris Martinez", username: "@chrism", points: 1050, avatar: "https://i.pravatar.cc/150?img=15", wins: 19, losses: 23, tournaments: [], groupMemberships: 2, videosPosted: 0 },
+    { rank: 10, name: "Jessica Brown", username: "@jessicab", points: 890, avatar: "https://i.pravatar.cc/150?img=25", wins: 16, losses: 18, tournaments: [{ name: "Newbie Knockout", place: 1, date: "Feb 2024" }], groupMemberships: 1, videosPosted: 1 },
   ];
 
   const getRankBadge = (rank: number) => {
@@ -191,33 +235,57 @@ const PicklePoints = () => {
               </div>
             </Card>
 
-            <div className="space-y-3">
-              {leaderboardData.map((user) => (
-                <Card 
-                  key={user.rank} 
-                  className={`p-4 cursor-pointer transition-all hover:scale-[1.02] ${user.rank <= 3 ? 'border-primary/30 bg-primary/5' : ''}`}
-                  onClick={() => setSelectedUser(user)}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-8 flex justify-center">
-                      {getRankBadge(user.rank)}
-                    </div>
-                    <Avatar className="h-12 w-12">
-                      <AvatarImage src={user.avatar} alt={user.name} />
-                      <AvatarFallback>{user.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold truncate">{user.name}</p>
-                      <p className="text-sm text-muted-foreground">{user.username}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold text-primary">{user.points.toLocaleString()}</p>
-                      <p className="text-xs text-muted-foreground">points</p>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
+            <TooltipProvider>
+              <div className="space-y-3">
+                {leaderboardData.map((user) => {
+                  const badges = getUserBadges(user);
+                  return (
+                    <Card 
+                      key={user.rank} 
+                      className={`p-4 cursor-pointer transition-all hover:scale-[1.02] ${user.rank <= 3 ? 'border-primary/30 bg-primary/5' : ''}`}
+                      onClick={() => setSelectedUser(user)}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="w-8 flex justify-center">
+                          {getRankBadge(user.rank)}
+                        </div>
+                        <Avatar className="h-12 w-12">
+                          <AvatarImage src={user.avatar} alt={user.name} />
+                          <AvatarFallback>{user.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold truncate">{user.name}</p>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <p className="text-sm text-muted-foreground">{user.username}</p>
+                            {badges.length > 0 && (
+                              <div className="flex items-center gap-0.5">
+                                {badges.slice(0, 3).map((badge) => (
+                                  <Tooltip key={badge.id}>
+                                    <TooltipTrigger asChild>
+                                      <span className={badge.color}>{badge.icon}</span>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top" className="text-xs">
+                                      {badge.name}
+                                    </TooltipContent>
+                                  </Tooltip>
+                                ))}
+                                {badges.length > 3 && (
+                                  <span className="text-xs text-muted-foreground ml-0.5">+{badges.length - 3}</span>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-primary">{user.points.toLocaleString()}</p>
+                          <p className="text-xs text-muted-foreground">points</p>
+                        </div>
+                      </div>
+                    </Card>
+                  );
+                })}
+              </div>
+            </TooltipProvider>
           </TabsContent>
         </Tabs>
       </div>
@@ -274,6 +342,27 @@ const PicklePoints = () => {
                 />
               </div>
             </div>
+
+            {/* Achievement Badges */}
+            {selectedUser && getUserBadges(selectedUser).length > 0 && (
+              <div>
+                <h3 className="font-semibold mb-3 flex items-center gap-2">
+                  <Star className="w-4 h-4 text-primary" />
+                  Achievements
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {getUserBadges(selectedUser).map((badge) => (
+                    <div
+                      key={badge.id}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted/50 ${badge.color}`}
+                    >
+                      {badge.icon}
+                      <span className="text-xs font-medium">{badge.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Tournaments */}
             <div>
