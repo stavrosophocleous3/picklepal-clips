@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MobileNav } from "@/components/MobileNav";
+import { ProfileSheet } from "@/components/ProfileSheet";
 import { MapPin, Clock, Calendar as CalendarIcon } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -244,23 +245,26 @@ const Courts = () => {
               <p className="text-sm text-muted-foreground">Reserve a court for 1.5 hours</p>
             </div>
           </div>
-          {bookedSlots.size > 0 && (
-            <Button
-              variant="outline"
-              onClick={() => {
-                setBookedSlots(new Map());
-                setShowCourts(false);
-                setSelectedDate(undefined);
-                setSelectedTimeSlots([]);
-                toast({
-                  title: "All Reservations Cleared",
-                  description: "All courts are now available",
-                });
-              }}
-            >
-              Clear All Reservations
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {bookedSlots.size > 0 && (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setBookedSlots(new Map());
+                  setShowCourts(false);
+                  setSelectedDate(undefined);
+                  setSelectedTimeSlots([]);
+                  toast({
+                    title: "All Reservations Cleared",
+                    description: "All courts are now available",
+                  });
+                }}
+              >
+                Clear All Reservations
+              </Button>
+            )}
+            <ProfileSheet />
+          </div>
         </div>
 
         {/* Weekly Calendar Overview */}
