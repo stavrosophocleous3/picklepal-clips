@@ -5,10 +5,11 @@ import { MemberQRCode } from "@/components/MemberQRCode";
 import { AchievementBadges } from "@/components/AchievementBadges";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { User, Settings, Edit2, Camera, LogOut, Video } from "lucide-react";
+import { User, Settings, Edit2, Camera, LogOut, Video, Medal, Calendar, Users, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface Profile {
   id: string;
@@ -215,6 +216,33 @@ const MyProfile = () => {
           </Button>
         </div>
 
+        {/* Pickle Points Card */}
+        <div className="p-4 border-b border-border">
+          <Card className="bg-gradient-to-r from-amber-500/10 to-yellow-500/10 border-amber-500/20">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center">
+                    <Medal className="w-5 h-5 text-amber-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Pickle Points</p>
+                    <p className="text-2xl font-bold">245</p>
+                  </div>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => navigate("/pickle-points")}
+                  className="border-amber-500/30 hover:bg-amber-500/10"
+                >
+                  View Rewards
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Member QR Code */}
         {user && (
           <MemberQRCode
@@ -223,6 +251,60 @@ const MyProfile = () => {
             username={profile?.username || user.email?.split("@")[0] || "member"}
           />
         )}
+
+        {/* My Bookings & Sign-ups */}
+        <div className="p-4 border-b border-border">
+          <h3 className="text-lg font-semibold mb-3">Upcoming</h3>
+          <div className="space-y-3">
+            {/* Mock Court Booking */}
+            <Card className="border-border">
+              <CardContent className="p-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <Calendar className="w-5 h-5 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm">Court A3 Reserved</p>
+                    <p className="text-xs text-muted-foreground">Tomorrow, 2:00 PM - 3:30 PM</p>
+                  </div>
+                  <Clock className="w-4 h-4 text-muted-foreground" />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Mock Game Session */}
+            <Card className="border-border">
+              <CardContent className="p-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center shrink-0">
+                    <Users className="w-5 h-5 text-green-500" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm">Open Play - Thursday</p>
+                    <p className="text-xs text-muted-foreground">Thu, 6:00 PM - 9:00 PM • 8 going</p>
+                  </div>
+                  <span className="text-xs bg-green-500/10 text-green-600 px-2 py-1 rounded-full">Going</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Mock Group Game */}
+            <Card className="border-border">
+              <CardContent className="p-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
+                    <Users className="w-5 h-5 text-blue-500" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm">Weekend Warriors Game</p>
+                    <p className="text-xs text-muted-foreground">Sat, 10:00 AM • 4/8 players</p>
+                  </div>
+                  <span className="text-xs bg-blue-500/10 text-blue-600 px-2 py-1 rounded-full">RSVP'd</span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
 
         {/* Achievement Badges */}
         <AchievementBadges
