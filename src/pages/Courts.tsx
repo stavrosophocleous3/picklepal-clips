@@ -409,10 +409,9 @@ const Courts = () => {
                 return (
                   <Card
                     key={court.id}
-                    className={`p-6 transition-all hover:border-primary cursor-pointer`}
-                    onClick={() => handleCourtPreview(court)}
+                    className={`p-6 transition-all hover:border-primary`}
                   >
-                    <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-3">
                       <div className="flex items-center justify-between">
                         <h3 className="text-xl font-semibold">{court.name}</h3>
                         <span
@@ -426,20 +425,20 @@ const Courts = () => {
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-2 text-muted-foreground">
+                      <button
+                        className="flex items-center gap-2 text-primary hover:underline text-sm cursor-pointer"
+                        onClick={() => handleCourtPreview(court)}
+                      >
                         <Clock className="w-4 h-4" />
-                        <span className="text-sm">View Schedule</span>
-                      </div>
+                        <span>View Schedule</span>
+                      </button>
 
                       <Button
                         className="w-full"
-                        variant="outline"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleCourtPreview(court);
-                        }}
+                        onClick={() => handleCourtClick(court)}
+                        disabled={!allSlotsAvailable}
                       >
-                        View Schedule
+                        Book
                       </Button>
                     </div>
                   </Card>
