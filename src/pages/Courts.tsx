@@ -30,6 +30,28 @@ const Courts = () => {
   const [playerNames, setPlayerNames] = useState<string[]>(["", "", "", ""]);
   const [bookedSlots, setBookedSlots] = useState<Map<number, Set<string>>>(new Map());
   const [showCourts, setShowCourts] = useState(false);
+  const [socialDialogOpen, setSocialDialogOpen] = useState(false);
+  const [joinedSocial, setJoinedSocial] = useState(false);
+  const [socialAttendees, setSocialAttendees] = useState(12);
+
+  const handleJoinSocial = () => {
+    if (!joinedSocial) {
+      setJoinedSocial(true);
+      setSocialAttendees(prev => prev + 1);
+      toast({
+        title: "You're in! 🎾",
+        description: "See you at the PB Social on Friday at 6 PM!",
+      });
+    } else {
+      setJoinedSocial(false);
+      setSocialAttendees(prev => prev - 1);
+      toast({
+        title: "RSVP Cancelled",
+        description: "You've been removed from the PB Social",
+      });
+    }
+    setSocialDialogOpen(false);
+  };
 
   const courts = [
     // A Courts (A1-A8)
@@ -246,6 +268,24 @@ const Courts = () => {
                       <span className="text-base font-bold leading-none">{dayNumber}</span>
                       <span className="text-base font-bold leading-none">{monthName}</span>
                     </div>
+                    {dayName === 'Fri' && (
+                      <div 
+                        className="mt-2 pt-2 border-t border-border/40 w-full flex-1 flex flex-col justify-center gap-2"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSocialDialogOpen(true);
+                        }}
+                      >
+                        <div className="bg-primary/20 rounded-lg p-2 hover:bg-primary/30 transition-colors cursor-pointer">
+                          <p className="text-xs text-center leading-tight font-bold text-primary">🎾 PB Social</p>
+                          <p className="text-sm font-bold text-center">6-9 PM</p>
+                          <p className="text-xs text-center text-muted-foreground">{socialAttendees} going</p>
+                          {joinedSocial && (
+                            <p className="text-xs text-center text-green-600 font-medium mt-1">✓ You're in!</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
                     {isSaturday && (
                       <div className="mt-2 pt-2 border-t border-border/40 w-full flex-1 flex flex-col justify-center gap-2">
                         <div>
@@ -513,6 +553,50 @@ const Courts = () => {
               onClick={handleReservationSubmit}
             >
               Confirm Reservation
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* PB Social Dialog */}
+      <Dialog open={socialDialogOpen} onOpenChange={setSocialDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              🎾 Friday PB Social
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 mt-4">
+            <div className="bg-muted rounded-lg p-4 space-y-2">
+              <div className="flex items-center gap-2">
+                <CalendarIcon className="w-4 h-4 text-primary" />
+                <span className="font-medium">This Friday</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-primary" />
+                <span>6:00 PM - 9:00 PM</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-primary" />
+                <span>All Courts Open Play</span>
+              </div>
+            </div>
+            
+            <p className="text-sm text-muted-foreground">
+              Join us for our weekly Pickleball Social! Open play, music, and good vibes. All skill levels welcome.
+            </p>
+            
+            <div className="flex items-center justify-between bg-muted/50 rounded-lg p-3">
+              <span className="text-sm text-muted-foreground">Current attendees</span>
+              <span className="font-bold text-lg">{socialAttendees} going</span>
+            </div>
+            
+            <Button 
+              className="w-full" 
+              variant={joinedSocial ? "outline" : "default"}
+              onClick={handleJoinSocial}
+            >
+              {joinedSocial ? "Cancel RSVP" : "I'm Going! 🎉"}
             </Button>
           </div>
         </DialogContent>
