@@ -5,7 +5,7 @@ import { MemberQRCode } from "@/components/MemberQRCode";
 import { AchievementBadges } from "@/components/AchievementBadges";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { User, Settings, Edit2, Camera, LogOut, Video, Medal, Calendar, Users, Clock } from "lucide-react";
+import { User, Settings, Edit2, Camera, LogOut, Video, Medal, Calendar, Users, Clock, Trophy, Target, TrendingUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
@@ -214,6 +214,48 @@ const MyProfile = () => {
             <Edit2 className="w-4 h-4 mr-2" />
             Edit Profile
           </Button>
+        </div>
+
+        {/* Player Stats & Performance */}
+        <div className="p-4 border-b border-border">
+          <h3 className="text-lg font-semibold mb-3">Player Stats</h3>
+          <div className="grid grid-cols-3 gap-3">
+            {/* Win/Loss Record */}
+            <Card className="border-border">
+              <CardContent className="p-3 text-center">
+                <div className="w-8 h-8 rounded-full bg-green-500/10 flex items-center justify-center mx-auto mb-2">
+                  <Trophy className="w-4 h-4 text-green-500" />
+                </div>
+                <p className="text-lg font-bold">12-5</p>
+                <p className="text-xs text-muted-foreground">Win/Loss</p>
+                <p className="text-xs text-green-500 mt-1">71% WR</p>
+              </CardContent>
+            </Card>
+
+            {/* Skill Rating */}
+            <Card className="border-border">
+              <CardContent className="p-3 text-center">
+                <div className="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center mx-auto mb-2">
+                  <Target className="w-4 h-4 text-purple-500" />
+                </div>
+                <p className="text-lg font-bold">3.5</p>
+                <p className="text-xs text-muted-foreground">Skill Level</p>
+                <p className="text-xs text-purple-500 mt-1">Intermediate</p>
+              </CardContent>
+            </Card>
+
+            {/* Leaderboard Rank */}
+            <Card className="border-border">
+              <CardContent className="p-3 text-center">
+                <div className="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center mx-auto mb-2">
+                  <TrendingUp className="w-4 h-4 text-amber-500" />
+                </div>
+                <p className="text-lg font-bold">#24</p>
+                <p className="text-xs text-muted-foreground">Club Rank</p>
+                <p className="text-xs text-amber-500 mt-1">Top 20%</p>
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
         {/* Pickle Points Card */}
