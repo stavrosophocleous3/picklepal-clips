@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { MobileNav } from "@/components/MobileNav";
-import { Medal, Crown, Trophy, Flame, Star, Zap, Users, Video, X } from "lucide-react";
+import { Medal, Crown, Trophy, Flame, Star, Zap, Users, Video, Layers } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -12,6 +12,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { PickleCards } from "@/components/PickleCards";
 import socialReward from "@/assets/rewards/social-reward.png";
 import taphouseReward from "@/assets/rewards/taphouse-reward.png";
 import lessonReward from "@/assets/rewards/lesson-reward.png";
@@ -168,8 +169,12 @@ const PicklePoints = () => {
         </div>
 
         <Tabs defaultValue="points" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsList className="grid w-full grid-cols-3 mb-6">
             <TabsTrigger value="points">My Points</TabsTrigger>
+            <TabsTrigger value="cards" className="flex items-center gap-1">
+              <Layers className="w-3.5 h-3.5" />
+              Cards
+            </TabsTrigger>
             <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
           </TabsList>
 
@@ -222,6 +227,10 @@ const PicklePoints = () => {
                 })}
               </div>
             </div>
+          </TabsContent>
+
+          <TabsContent value="cards">
+            <PickleCards />
           </TabsContent>
 
           <TabsContent value="leaderboard">
