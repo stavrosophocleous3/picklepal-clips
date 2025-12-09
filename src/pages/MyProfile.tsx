@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { MobileNav } from "@/components/MobileNav";
 import { MemberQRCode } from "@/components/MemberQRCode";
+import { AchievementBadges } from "@/components/AchievementBadges";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { User, Settings, Edit2, Camera, LogOut, Video } from "lucide-react";
@@ -222,6 +223,20 @@ const MyProfile = () => {
             username={profile?.username || user.email?.split("@")[0] || "member"}
           />
         )}
+
+        {/* Achievement Badges */}
+        <AchievementBadges
+          stats={{
+            wins: 12,
+            losses: 5,
+            points: 45,
+            tournamentWins: 1,
+            tournamentPodiums: 2,
+            groupMemberships: 2,
+            videosPosted: 0,
+            matchesPlayed: 17,
+          }}
+        />
 
         {/* Profile Details */}
         <div className="p-4 border-b border-border">

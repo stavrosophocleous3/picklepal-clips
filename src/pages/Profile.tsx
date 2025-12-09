@@ -1,4 +1,5 @@
 import { MobileNav } from "@/components/MobileNav";
+import { AchievementBadges } from "@/components/AchievementBadges";
 import { Button } from "@/components/ui/button";
 import { User, Settings } from "lucide-react";
 import { useParams } from "react-router-dom";
@@ -74,6 +75,20 @@ const Profile = () => {
             </Button>
           </div>
         </div>
+
+        {/* Achievement Badges */}
+        <AchievementBadges
+          stats={{
+            wins: 8,
+            losses: 3,
+            points: 120,
+            tournamentWins: 0,
+            tournamentPodiums: 1,
+            groupMemberships: 4,
+            videosPosted: 6,
+            matchesPlayed: 11,
+          }}
+        />
 
         {/* Videos Grid */}
         <div className="p-4">
