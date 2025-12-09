@@ -16,6 +16,26 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
+// Mock reservation data with player names for demo
+const mockReservations: Record<number, Record<string, { players: string[]; bookedBy: string }>> = {
+  1: { 
+    "8:00 AM-9:30 AM": { players: ["Mike Chen", "Sarah Lee", "Tom Wilson", "Amy Park"], bookedBy: "Mike Chen" },
+    "2:00 PM-3:30 PM": { players: ["John Smith", "Lisa Brown", "David Kim", "Emma White"], bookedBy: "John Smith" },
+  },
+  2: { 
+    "9:30 AM-11:00 AM": { players: ["Carlos Rivera", "Nina Patel", "Jake Moore", "Mia Thompson"], bookedBy: "Carlos Rivera" },
+    "5:00 PM-6:30 PM": { players: ["Alex Johnson", "Rachel Green", "Chris Martin", "Kate Wilson"], bookedBy: "Alex Johnson" },
+  },
+  3: { 
+    "11:00 AM-12:30 PM": { players: ["Brian Lee", "Sophia Chen", "Mark Davis", "Julia Roberts"], bookedBy: "Brian Lee" },
+  },
+  5: { 
+    "8:00 AM-9:30 AM": { players: ["Tony Stark", "Bruce Wayne", "Clark Kent", "Diana Prince"], bookedBy: "Tony Stark" },
+    "12:30 PM-2:00 PM": { players: ["Peter Parker", "Mary Jane", "Gwen Stacy", "Miles Morales"], bookedBy: "Peter Parker" },
+    "6:30 PM-8:00 PM": { players: ["Steve Rogers", "Natasha Romanoff", "Sam Wilson", "Bucky Barnes"], bookedBy: "Steve Rogers" },
+  },
+};
+
 const Courts = () => {
   const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
@@ -33,6 +53,8 @@ const Courts = () => {
   const [socialDialogOpen, setSocialDialogOpen] = useState(false);
   const [joinedSocial, setJoinedSocial] = useState(false);
   const [socialAttendees, setSocialAttendees] = useState(12);
+  const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
+  const [previewCourt, setPreviewCourt] = useState<{ id: number; name: string } | null>(null);
 
   const handleJoinSocial = () => {
     if (!joinedSocial) {
@@ -51,6 +73,19 @@ const Courts = () => {
       });
     }
     setSocialDialogOpen(false);
+  };
+
+  const handleCourtPreview = (court: { id: number; name: string }) => {
+    setPreviewCourt(court);
+    setScheduleDialogOpen(true);
+  };
+
+  const handleConfirmCourtFromSchedule = () => {
+    if (previewCourt) {
+      setSelectedCourt(previewCourt);
+      setScheduleDialogOpen(false);
+      setFinalSlotDialogOpen(true);
+    }
   };
 
   const courts = [
@@ -374,12 +409,8 @@ const Courts = () => {
                 return (
                   <Card
                     key={court.id}
-                    className={`p-6 transition-all ${
-                      allSlotsAvailable
-                        ? "hover:border-primary cursor-pointer"
-                        : "opacity-60"
-                    }`}
-                    onClick={() => allSlotsAvailable && handleCourtClick(court)}
+                    className={`p-6 transition-all hover:border-primary cursor-pointer`}
+                    onClick={() => handleCourtPreview(court)}
                   >
                     <div className="flex flex-col gap-4">
                       <div className="flex items-center justify-between">
@@ -397,18 +428,18 @@ const Courts = () => {
 
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <Clock className="w-4 h-4" />
-                        <span className="text-sm">1.5 hour block</span>
+                        <span className="text-sm">View Schedule</span>
                       </div>
 
                       <Button
                         className="w-full"
-                        disabled={!allSlotsAvailable}
+                        variant="outline"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleCourtClick(court);
+                          handleCourtPreview(court);
                         }}
                       >
-                        {allSlotsAvailable ? "Reserve Court" : "Not Available"}
+                        View Schedule
                       </Button>
                     </div>
                   </Card>
@@ -597,6 +628,133 @@ const Courts = () => {
               onClick={handleJoinSocial}
             >
               {joinedSocial ? "Cancel RSVP" : "I'm Going! 🎉"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Court Schedule Preview Dialog */}
+      <Dialog open={scheduleDialogOpen} onOpenChange={setScheduleDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <CalendarIcon className="w-5 h-5 text-primary" />
+              Court {previewCourt?.name} - Daily Schedule
+            </DialogTitle>
+            {selectedDate && (
+              <p className="text-sm text-muted-foreground">{format(selectedDate, 'EEEE, MMMM d, yyyy')}</p>
+            )}
+          </DialogHeader>
+          
+          <div className="mt-4 space-y-1">
+            {/* Timeline header */}
+            <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3 px-2">
+              <div className="w-20">Time</div>
+              <div className="flex-1">Status</div>
+            </div>
+            
+            {/* Time slots */}
+            {timeSlots.map((slot, index) => {
+              const slotKey = `${slot.start}-${slot.end}`;
+              const courtReservations = previewCourt ? mockReservations[previewCourt.id] : {};
+              const reservation = courtReservations?.[slotKey];
+              const userBookedSlots = previewCourt ? bookedSlots.get(previewCourt.id) : null;
+              const isUserBooked = userBookedSlots?.has(slotKey);
+              const isBooked = reservation || isUserBooked;
+              const isSelectedSlot = selectedTimeSlots.some(s => `${s.start}-${s.end}` === slotKey);
+              
+              return (
+                <div
+                  key={index}
+                  className={cn(
+                    "flex items-stretch rounded-lg border transition-all",
+                    isBooked 
+                      ? "bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800" 
+                      : isSelectedSlot
+                        ? "bg-primary/10 border-primary"
+                        : "bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800"
+                  )}
+                >
+                  {/* Time column */}
+                  <div className={cn(
+                    "w-24 flex-shrink-0 p-3 border-r flex flex-col justify-center",
+                    isBooked 
+                      ? "border-red-200 dark:border-red-800" 
+                      : isSelectedSlot
+                        ? "border-primary"
+                        : "border-green-200 dark:border-green-800"
+                  )}>
+                    <span className="text-xs font-medium">{slot.start}</span>
+                    <span className="text-xs text-muted-foreground">to {slot.end}</span>
+                  </div>
+                  
+                  {/* Content column */}
+                  <div className="flex-1 p-3 flex items-center justify-between">
+                    {isBooked ? (
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-xs font-semibold text-red-700 dark:text-red-400">
+                            Reserved
+                          </span>
+                          {isUserBooked && (
+                            <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">
+                              Your booking
+                            </span>
+                          )}
+                        </div>
+                        {reservation && (
+                          <div className="space-y-1">
+                            <p className="text-xs text-muted-foreground">
+                              Booked by: <span className="font-medium">{reservation.bookedBy}</span>
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Players: {reservation.players.join(", ")}
+                            </p>
+                          </div>
+                        )}
+                        {isUserBooked && !reservation && (
+                          <p className="text-xs text-muted-foreground">
+                            Players: {playerNames.filter(n => n).join(", ") || "Your reservation"}
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold text-green-700 dark:text-green-400">
+                          Available
+                        </span>
+                        {isSelectedSlot && (
+                          <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">
+                            Your preferred time
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          
+          <div className="flex gap-3 mt-6">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={() => setScheduleDialogOpen(false)}
+            >
+              Close
+            </Button>
+            <Button
+              className="flex-1"
+              onClick={handleConfirmCourtFromSchedule}
+              disabled={selectedTimeSlots.every(slot => {
+                const slotKey = `${slot.start}-${slot.end}`;
+                const courtReservations = previewCourt ? mockReservations[previewCourt.id] : {};
+                const userBookedSlots = previewCourt ? bookedSlots.get(previewCourt.id) : null;
+                return courtReservations?.[slotKey] || userBookedSlots?.has(slotKey);
+              })}
+            >
+              Reserve This Court
             </Button>
           </div>
         </DialogContent>
