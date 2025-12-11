@@ -2,7 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MobileNav } from "@/components/MobileNav";
 import { ProfileSheet } from "@/components/ProfileSheet";
-import { MapPin, Clock, Calendar as CalendarIcon } from "lucide-react";
+import { MapPin, Clock, Calendar as CalendarIcon, CloudRain, X } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
 
 // Mock reservation data with player names for demo
@@ -56,6 +57,7 @@ const Courts = () => {
   const [socialAttendees, setSocialAttendees] = useState(12);
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
   const [previewCourt, setPreviewCourt] = useState<{ id: number; name: string } | null>(null);
+  const [showClosureAlert, setShowClosureAlert] = useState(true);
 
   const handleJoinSocial = () => {
     if (!joinedSocial) {
@@ -266,6 +268,25 @@ const Courts = () => {
             <ProfileSheet />
           </div>
         </div>
+
+        {/* Weather Closure Alert */}
+        {showClosureAlert && (
+          <Alert className="mb-6 border-amber-500/50 bg-amber-500/10 relative">
+            <CloudRain className="h-5 w-5 text-amber-500" />
+            <AlertTitle className="text-amber-600 font-semibold">Courts Closed Due to Rain</AlertTitle>
+            <AlertDescription className="text-amber-600/80">
+              All outdoor courts are temporarily closed today due to weather conditions. We expect to reopen tomorrow at 8 AM. Stay dry! ☔
+            </AlertDescription>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-2 right-2 h-6 w-6 text-amber-500 hover:text-amber-600 hover:bg-amber-500/20"
+              onClick={() => setShowClosureAlert(false)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </Alert>
+        )}
 
         {/* Weekly Calendar Overview */}
         <Card className="p-8 mb-6">
